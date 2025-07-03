@@ -20,7 +20,7 @@ const recursiveGetFiles = (dir: string) => {
 export const getPermalinks = (
   markdownFolder: string,
   ignorePatterns: Array<RegExp> = [],
-  func: (str: any, ...args: any[]) => string = defaultPathToPermalinkFunc
+  func: (str: any, ...args: any[]) => string = defaultPathToPermalinkFunc,
 ) => {
   const files = recursiveGetFiles(markdownFolder);
   const filesFiltered = files.filter((file) => {
@@ -32,11 +32,11 @@ export const getPermalinks = (
 
 const defaultPathToPermalinkFunc = (
   filePath: string,
-  markdownFolder: string
+  markdownFolder: string,
 ) => {
   const permalink = filePath
     .replace(markdownFolder, "") // make the permalink relative to the markdown folder
     .replace(/\.(mdx|md)/, "")
-    .replace(/\\/g, "/") // replace windows backslash with forward slash
+    .replace(/\\/g, "/"); // replace windows backslash with forward slash
   return permalink.length > 0 ? permalink : "/"; // for home page
 };

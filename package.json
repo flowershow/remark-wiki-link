@@ -1,40 +1,59 @@
 {
-  "name": "@portaljs/remark-wiki-link",
-  "version": "1.2.0",
-  "description": "Parse and render wiki-style links in markdown especially Obsidian style links.",
+  "name": "remark-wiki-link-plus",
+  "version": "1.1.1",
+  "description": "Parse and render wiki-style links, especially Obsidian style links.",
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts --clean --sourcemap"
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean --sourcemap",
+    "test": "jest",
+    "format": "npx prettier . --write",
+    "changeset": "changeset",
+    "release": "changeset publish"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/datopian/portaljs.git",
-    "directory": "packages/remark-wiki-link"
+    "url": "git+https://github.com/flowershow/remark-wiki-link-plus.git"
   },
   "keywords": [
     "remark",
     "remark-plugin",
     "markdown",
-    "gfm",
     "obsidian"
   ],
-  "author": "Rufus Pollock",
+  "author": "Flowershow",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/datopian/portaljs/issues"
+    "url": "https://github.com/flowershow/remark-wiki-link-plus/issues"
   },
-  "homepage": "https://github.com/datopian/portaljs#readme",
+  "homepage": "https://github.com/flowershow/remark-wiki-link-plus#readme",
   "publishConfig": {
     "access": "public"
   },
+  "dependencies": {
+    "mdast-util-to-markdown": "^2.1.2",
+    "micromark-util-symbol": "^2.0.1"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.5",
+    "@types/jest": "^30.0.0",
+    "@types/mdast": "^4.0.4",
+    "@types/node": "^24.0.10",
+    "jest": "^30.0.4",
+    "mdast-util-from-markdown": "^2.0.2",
+    "micromark": "^4.0.2",
+    "micromark-util-types": "^2.0.2",
+    "prettier": "3.6.2",
+    "remark-gfm": "^4.0.1",
+    "ts-jest": "^29.4.0",
+    "ts-node": "^10.9.2",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3",
+    "unified": "^11.0.5",
+    "unist-util-select": "^5.1.0"
+  },
+  "type": "module",
   "files": [
     "dist"
   ],
-  "dependencies": {
-    "mdast-util-to-markdown": "^1.5.0",
-    "mdast-util-wiki-link": "^0.0.2",
-    "micromark-util-symbol": "^1.0.1"
-  },
-  "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/src/index.d.ts",
@@ -44,11 +63,5 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     }
-  },
-  "devDependencies": {
-    "micromark": "^3.1.0",
-    "remark-gfm": "^3.0.1",
-    "tsup": "^8.5.0",
-    "typescript": "^5.8.3"
   }
 }

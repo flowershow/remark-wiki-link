@@ -1,6 +1,8 @@
-# remark-wiki-link
+# remark-wiki-link-plus
 
 Parse and render wiki-style links in markdown especially Obsidian style links.
+
+🚧 TODO better docs and usage instructions/examples
 
 ## What is this ?
 
@@ -28,99 +30,82 @@ Future support:
 ## Installation
 
 ```bash
-npm install @portaljs/remark-wiki-link
+npm install remark-wiki-link-plus
 ```
 
 ## Usage
 
 ```javascript
-import unified from "unified";
-import markdown from "remark-parse";
-import wikiLinkPlugin from "@portaljs/remark-wiki-link";
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import wikiLinkPlugin from "remark-wiki-link-plus";
 
-const processor = unified().use(markdown).use(wikiLinkPlugin);
+const processor = unified().use(remarkParse).use(wikiLinkPlugin);
 ```
 
 ## Configuration options
 
-### `pathFormat`
+### `format`
 
-Type: `"raw" | "obisidan-absolute" | "obsidian-short"`
-Default: `"raw"`
+Type: `"regular" | "shortestPossible"`
+Default: `"regular"`
 
-- `"raw"`: use this option for regular relative or absolute paths (or Obsidian relative paths), e.g. `[[../some/folder/file]]` or `[[[/some/folder/file]]]`,
-- `"obsidian-absolute"`: use this option for Obsidian absolute paths, i.e. paths with no leading `/`, e.g. `[[some/folder/file]]`
-- `"obsidian-short"`: use this option for Obsidian shortened paths, e.g. `[[file]]` to resolve them to absolute paths. Note that apart from setting this value, you will also need to pass a list of paths to files in your content folder, and pass it as `permalinks` option. You can generate this list yourself or use our util function `getPermalinks`. See below for more info.
-
-> [!note]
-> Wiki link format in Obsidian can be configured in Settings -> Files & Links -> New link format.
-
-### `aliasDivider`
-
-Type: single character string
-Default: `"|"`
-
-Alias divider character used in your wiki links. E.g. `[[/some/folder/file|Alias]]`
+- `"regular"`: Link paths will be treated as is (absolute or relative, depending on how they are written)
+- `"shortestPossible"`: Link paths will be treated as "shortest-possible" absolute paths (e.g. `[[abc]]` would be matched to blog/abc permalink if provided in permalinks array)
 
 ### `permalinks`
 
 Type: `Array<string>`
 Default: `[]`
 
-A list of permalinks you want to match your wiki link paths with. Wiki links with matched permalinks will have `node.data.exists` property set to `true`. Wiki links with no matching permalinks will also have additional class `new` set.
+A list of URLs used to match wikilinks. Wikilink without a matching permalink will have `new` class.
 
-### `wikiLinkResolver`
+(When using `format: "shortestPossible"`, this list is used to resolve shortened paths to their full paths.)
 
-Type: `(name: string) => Array<string>`
-Default: `(name: string) => name.replace(/\/index$/, "")` (simplified; see source code for full version)
+### `className`
 
-A function that will take the wiki link target page (e.g. `"/some/folder/file"` in `[[/some/folder/file#Some Heading|Some Alias]]` wiki link) and return an array of pages to which the wiki link **can** be resolved (one of them will be used, depending on wheather `pemalinks` are passed, and if match is found).
+Type: `string`
+Default: `"internal"`
 
-If `permalinks` are passed, the resulting array will be matched against these permalinks to find the match. The matching pemalink will be used as node's `href` (or `src` for images).
-
-If no matching permalink is found, the first item from the array returned by this function will be used as a node's `href` (or `src` for images). So, if you want to write a custom wiki link -> url
+Class name added to all wiki link and embed nodes.
 
 ### `newClassName`
 
 Type: `string`
 Default: `"new"`
 
-Class name added to nodes created for wiki links for which no matching permalink (passed in `permalinks` option) was found.
+Class name added to nodes for which no matching permalink (passed in `permalinks` option) was found.
 
-### `wikiLinkClassName`
+### `urlResolver`
+
+Type: `(name: string) => string`
+Default: `(name: string) => name`
+
+A function that resolves a wikilink (or embed) target to a URL path. The target is the part in `[[target|alias]]` or `![[target]]`.
+
+### `aliasDivider`
 
 Type: `string`
-Default: `"internal"`
+Default: `"|"`
 
-Class name added to all wiki link nodes.
+The character used to separate the link target from its alias in wiki links. For example in `[[target|alias]]`, the divider is `|`.
 
-### `hrefTemplate`
+## Generating list of permalinks
 
-Type: `(permalink: string) => string`
-Default: `(permalink: string) => permalink`
+If you're using shortest possible path format for your wiki links, you need to set `option.format: "shortestPossible"` and provide the plugin with a list of permalinks that point to files in your content folder as `option.permalinks`. You can generate this list using your own script or use a file system utility like `glob`:
 
-A function that will be used to convert a matched permalink of the wiki link to `href` (or `src` for images).
+```javascript
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import wikiLinkPlugin from "remark-wiki-link-plus";
+import glob from "glob";
 
-### `markdownFolder` ❌ (deprecated as of version 1.1.0)
+const permalinks = glob
+  .sync("**/*.md", { cwd: "content" })
+  .map((path) => path.replace(/\.md$/, ""));
 
-A string that points to the content folder, that will be used to resolve Obsidian shortened wiki link path format.
-
-Instead of using this option, use e.g. `getPermalinks` util function exported from this package to generate a list of permalinks from your content folder, and pass it explicitly as `permalinks` option.
-
-## Generating list of permalinks from content folder with `getPermalinks`
-
-If you're using shortened path format for your Obsidian wiki links, in order to resolve them correctly to paths they point to, you need to set `option.pathFormat: "obsidian-short"` but also provide the plugin with a list of permalinks that point to files in your content folder as `option.permalinks`. You can use your own script to generate this list or use our util function `getPermalinks` like so:
-
-```javascript {4,6,11-12}
-import unified from "unified";
-import markdown from "remark-parse";
-import wikiLinkPlugin from "@portaljs/remark-wiki-link";
-import { getPermalinks } from "@portaljs/remark-wiki-link";
-
-const permalinks = await getPermalinks("path-to-your-content-folder");
-
-const processor = unified().use(markdown).use(wikiLinkPlugin, {
-  pathFormat: "obsidian-short",
+const processor = unified().use(remarkParse).use(wikiLinkPlugin, {
+  format: "shortestPossible",
   permalinks,
 });
 ```
@@ -128,5 +113,5 @@ const processor = unified().use(markdown).use(wikiLinkPlugin, {
 ## Running tests
 
 ```bash
-pnpm nx test remark-wiki-link
+npm test
 ```

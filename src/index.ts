@@ -1,3 +1,5 @@
 export * from "./lib/remarkWikiLink";
 export { default } from "./lib/remarkWikiLink";
-export { getPermalinks } from "./utils";
+export { syntax } from "./lib/syntax";
+export { fromMarkdown } from "./lib/fromMarkdown";
+export { toMarkdown } from "./lib/toMarkdown";

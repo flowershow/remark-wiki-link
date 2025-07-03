@@ -1,5 +1,4 @@
 {
-  "extends": ["../../.eslintrc.json"],
   "ignorePatterns": ["!**/*", "dist/**/*"],
   "env": {
     "jest": true

@@ -1,72 +1,60 @@
-// Adjusted copy of https://github.com/landakram/micromark-extension-wiki-link/blob/master/src/index.js
-import { codes } from "micromark-util-symbol/codes.js";
+import { codes } from "micromark-util-symbol";
+import type {
+  Code,
+  Extension as SyntaxExtension,
+  Tokenizer,
+} from "micromark-util-types";
 
 export interface SyntaxOptions {
   aliasDivider?: string;
 }
 
-function isEndOfLineOrFile(code: number) {
-  return (
-    code === codes.carriageReturnLineFeed ||
-    code === codes.carriageReturn ||
-    code === codes.lineFeed ||
-    code === codes.eof
-  );
-}
-
-/**
- * Token types:
- * - `wikiLink`:
- * - `wikiLinkMarker`: The opening and closing brackets
- * - `wikiLinkData`: The data between the brackets
- * - `wikiLinkTarget`: The target of the link (the part before the alias divider)
- * - `wikiLinkAliasMarker`: The alias divider
- * - `wikiLinkAlias`: The alias of the link (the part after the alias divider)
- * */
-
-function wikiLink(opts: SyntaxOptions = {}) {
-  const aliasDivider = opts.aliasDivider || "|";
-
+// Micromark SyntaxExtension
+// https://github.com/micromark/micromark#syntaxextension
+function wikiLink(options?: SyntaxOptions): SyntaxExtension {
+  const aliasDivider = options?.aliasDivider || "|";
   const aliasMarker = aliasDivider.charCodeAt(0);
-  const startMarker = codes.leftSquareBracket;
   const embedStartMarker = codes.exclamationMark;
+  const startMarker = codes.leftSquareBracket;
   const endMarker = codes.rightSquareBracket;
 
-  function tokenize(effects, ok, nok) {
-    let data = false;
-    let alias = false;
+  const tokenize: Tokenizer = function (effects, ok, nok) {
+    let hasData = false;
+    let hasAlias = false;
+    let rootToken: "embed" | "wikiLink";
+    let markerToken: "embedMarker" | "wikiLinkMarker";
 
-    let startMarkerCount = 0;
-    let endMarkerCount = 0;
-
-    return start;
+    let openingBracketCursor = 0; // Counts opening [
+    let closingBracketCursor = 0; // Counts closing ]
 
     // recognize the start of a wiki link
-    function start(code: number) {
-      if (code === startMarker) {
-        effects.enter("wikiLink");
-        effects.enter("wikiLinkMarker");
-
-        return consumeStart(code);
-      } else if (code === embedStartMarker) {
-        effects.enter("wikiLink", { isType: "embed" });
-        effects.enter("wikiLinkMarker", { isType: "embed" });
-
+    function start(code: Code) {
+      if (code === startMarker || code === embedStartMarker) {
+        if (code === startMarker) {
+          rootToken = "wikiLink";
+          markerToken = "wikiLinkMarker";
+        } else if (code === embedStartMarker) {
+          rootToken = "embed";
+          markerToken = "embedMarker";
+        }
+        effects.enter(rootToken);
+        effects.enter(markerToken);
         return consumeStart(code);
       } else {
         return nok(code);
       }
     }
-    function consumeStart(code: number) {
+
+    function consumeStart(code: Code) {
       // when coursor is at the first character after the start marker `[[`
-      if (startMarkerCount === 2) {
-        effects.exit("wikiLinkMarker");
+      if (openingBracketCursor === 2) {
+        effects.exit(markerToken);
         return consumeData(code);
       }
 
       if (code === startMarker || code === embedStartMarker) {
         if (code === startMarker) {
-          startMarkerCount++;
+          openingBracketCursor++;
         }
         effects.consume(code);
         return consumeStart;
@@ -75,7 +63,7 @@ function wikiLink(opts: SyntaxOptions = {}) {
       }
     }
 
-    function consumeData(code: number) {
+    function consumeData(code: Code) {
       if (isEndOfLineOrFile(code)) {
         return nok(code);
       }
@@ -85,19 +73,19 @@ function wikiLink(opts: SyntaxOptions = {}) {
       return consumeTarget(code);
     }
 
-    function consumeTarget(code: number) {
+    function consumeTarget(code: Code) {
       if (code === aliasMarker) {
-        if (!data) return nok(code);
+        if (!hasData) return nok(code);
         effects.exit("wikiLinkTarget");
         effects.enter("wikiLinkAliasMarker");
         return consumeAliasMarker(code);
       }
 
       if (code === endMarker) {
-        if (!data) return nok(code);
+        if (!hasData) return nok(code);
         effects.exit("wikiLinkTarget");
         effects.exit("wikiLinkData");
-        effects.enter("wikiLinkMarker");
+        effects.enter(markerToken);
         return consumeEnd(code);
       }
 
@@ -105,25 +93,25 @@ function wikiLink(opts: SyntaxOptions = {}) {
         return nok(code);
       }
 
-      data = true;
+      hasData = true;
       effects.consume(code);
 
       return consumeTarget;
     }
 
-    function consumeAliasMarker(code) {
+    function consumeAliasMarker(code: Code) {
       effects.consume(code);
       effects.exit("wikiLinkAliasMarker");
       effects.enter("wikiLinkAlias");
       return consumeAlias(code);
     }
 
-    function consumeAlias(code: number) {
+    function consumeAlias(code: Code) {
       if (code === endMarker) {
-        if (!alias) return nok(code);
+        if (!hasAlias) return nok(code);
         effects.exit("wikiLinkAlias");
         effects.exit("wikiLinkData");
-        effects.enter("wikiLinkMarker");
+        effects.enter(markerToken);
         return consumeEnd(code);
       }
 
@@ -131,16 +119,16 @@ function wikiLink(opts: SyntaxOptions = {}) {
         return nok(code);
       }
 
-      alias = true;
+      hasAlias = true;
       effects.consume(code);
 
       return consumeAlias;
     }
 
-    function consumeEnd(code: number) {
-      if (endMarkerCount === 2) {
-        effects.exit("wikiLinkMarker");
-        effects.exit("wikiLink");
+    function consumeEnd(code: Code) {
+      if (closingBracketCursor === 2) {
+        effects.exit(markerToken);
+        effects.exit(rootToken);
         return ok(code);
       }
 
@@ -149,20 +137,29 @@ function wikiLink(opts: SyntaxOptions = {}) {
       }
 
       effects.consume(code);
-      endMarkerCount++;
+      closingBracketCursor++;
 
       return consumeEnd;
     }
-  }
 
-  const wikiLinkConstruct = { tokenize };
+    return start;
+  };
 
   return {
     text: {
-      [codes.leftSquareBracket]: wikiLinkConstruct,
-      [codes.exclamationMark]: wikiLinkConstruct,
+      [codes.leftSquareBracket]: { tokenize },
+      [codes.exclamationMark]: { tokenize },
     },
   };
 }
 
 export { wikiLink as syntax };
+
+function isEndOfLineOrFile(code: Code) {
+  return (
+    code === codes.carriageReturnLineFeed ||
+    code === codes.carriageReturn ||
+    code === codes.lineFeed ||
+    code === codes.eof
+  );
+}

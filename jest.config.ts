@@ -8,7 +8,9 @@ const jestConfig: JestConfigWithTsJest = {
     "^.+\\.[tj]s?$": "ts-jest",
   },
   moduleFileExtensions: ["ts", "js"],
-  transformIgnorePatterns: ["<rootDir>/node_modules/(?!remark-parse)"],
+  transformIgnorePatterns: [
+    "/node_modules/(?!micromark-util-symbol|micromark|micromark-util-types)/",
+  ],
 };
 
 export default jestConfig;
