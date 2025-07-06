@@ -1,5 +1,23 @@
 # remark-wiki-link
 
+## 3.0.0
+
+### Major Changes
+
+- cbe9459: BREAKING CHANGES:
+  - Renamed configuration options for clarity:
+    - `pathFormat` -> `format`
+    - `wikiLinkClassName` -> `className`
+    - `wikiLinkResolver` -> `urlResolver`
+  - Changed format values:
+    - `"raw"` -> `"regular"`
+    - `"obsidian-short"` -> `"shortestPossible"`
+    - Removed `"obsidian-absolute"` format
+  - Removed deprecated options:
+    - `hrefTransformer`
+    - `markdownFolder`
+  - Updated to work with micromark v4 and mdast-util-from-markdown v2
+
 ## 2.0.0
 
 ### Major Changes
