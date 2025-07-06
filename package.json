@@ -1,5 +1,5 @@
 {
-  "name": "remark-wiki-link-plus",
+  "name": "@flowershow/remark-wiki-link",
   "version": "2.0.0",
   "description": "Parse and render wiki-style links, especially Obsidian style links.",
   "scripts": {
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/flowershow/remark-wiki-link-plus.git"
+    "url": "git+https://github.com/flowershow/remark-wiki-link.git"
   },
   "keywords": [
     "remark",
@@ -22,9 +22,9 @@
   "author": "Flowershow",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/flowershow/remark-wiki-link-plus/issues"
+    "url": "https://github.com/flowershow/remark-wiki-link/issues"
   },
-  "homepage": "https://github.com/flowershow/remark-wiki-link-plus#readme",
+  "homepage": "https://github.com/flowershow/remark-wiki-link#readme",
   "publishConfig": {
     "access": "public"
   },

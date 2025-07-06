@@ -2,7 +2,7 @@ import { syntax } from "../src/lib/syntax";
 import { html } from "../src/lib/html";
 import { micromark } from "micromark";
 
-describe("micromark-extension-wiki-link-plus", () => {
+describe("micromark-extension-wiki-link", () => {
   describe("Parses a wikilink", () => {
     test("that has a matching permalink", () => {
       const serialized = micromark("[[Wiki Link]]", "ascii", {

@@ -1,4 +1,4 @@
-# remark-wiki-link-plus
+# @flowershow/remark-wiki-link
 
 Parse and render wiki-style links in markdown especially Obsidian style links.
 
@@ -30,7 +30,7 @@ Future support:
 ## Installation
 
 ```bash
-npm install remark-wiki-link-plus
+npm install @flowershow/remark-wiki-link
 ```
 
 ## Usage
@@ -38,7 +38,7 @@ npm install remark-wiki-link-plus
 ```javascript
 import { unified } from "unified";
 import remarkParse from "remark-parse";
-import wikiLinkPlugin from "remark-wiki-link-plus";
+import wikiLinkPlugin from "@flowershow/remark-wiki-link";
 
 const processor = unified().use(remarkParse).use(wikiLinkPlugin);
 ```
@@ -97,7 +97,7 @@ If you're using shortest possible path format for your wiki links, you need to s
 ```javascript
 import { unified } from "unified";
 import remarkParse from "remark-parse";
-import wikiLinkPlugin from "remark-wiki-link-plus";
+import wikiLinkPlugin from "@flowershow/remark-wiki-link-plus";
 import glob from "glob";
 
 const permalinks = glob
