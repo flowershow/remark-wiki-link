@@ -13,7 +13,7 @@ import { WikiLink } from "mdast";
 //   }
 // }
 
-describe("mdast-util-wiki-link-plus", () => {
+describe("mdast-util-wiki-link", () => {
   describe("(fromMarkdown) Parses a wikilink", () => {
     test("that has a matching permalink", () => {
       const ast = fromMarkdown("[[Wiki Link]]", {

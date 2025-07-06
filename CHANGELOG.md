@@ -1,4 +1,4 @@
-# remark-wiki-link-plus
+# remark-wiki-link
 
 ## 2.0.0
 
