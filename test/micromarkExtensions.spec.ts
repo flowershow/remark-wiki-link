@@ -9,7 +9,6 @@ describe("micromark-extension-wiki-link", () => {
         extensions: [syntax()],
         htmlExtensions: [html({ permalinks: ["Wiki Link"] })],
       });
-      // note: class="internal"
       expect(serialized).toBe(
         '<p><a href="Wiki Link" class="internal">Wiki Link</a></p>',
       );
@@ -20,13 +19,11 @@ describe("micromark-extension-wiki-link", () => {
         extensions: [syntax()],
         htmlExtensions: [html()],
       });
-      // note: class="internal new"
       expect(serialized).toBe(
         '<p><a href="New Page" class="internal new">New Page</a></p>',
       );
     });
 
-    // TODO
     test("with a heading", () => {
       const serialized = micromark("[[Wiki Link#Some Heading]]", "ascii", {
         extensions: [syntax()],
@@ -37,13 +34,41 @@ describe("micromark-extension-wiki-link", () => {
       );
     });
 
+    test("with heading and alias", () => {
+      const serialized = micromark(
+        "[[Wiki Link#Some Heading|Alias]]",
+        "ascii",
+        {
+          extensions: [syntax()],
+          htmlExtensions: [html()],
+        },
+      );
+      expect(serialized).toBe(
+        '<p><a href="Wiki Link#some-heading" class="internal new">Alias</a></p>',
+      );
+    });
+
+    test("with a heading with special characters", () => {
+      const serialized = micromark(
+        "[[Wiki Link#Some.Heading.With-♥-Unicode and spaces]]",
+        "ascii",
+        {
+          extensions: [syntax()],
+          htmlExtensions: [html()],
+        },
+      );
+      expect(serialized).toBe(
+        '<p><a href="Wiki Link#someheadingwith--unicode-and-spaces" class="internal new">Wiki Link#Some.Heading.With-♥-Unicode and spaces</a></p>',
+      );
+    });
+
     test("to a heading on the same page", () => {
-      const serialized = micromark("[[#Some Heading]]", "ascii", {
+      const serialized = micromark("[[#Heading On Same Page]]", "ascii", {
         extensions: [syntax()],
         htmlExtensions: [html()],
       });
       expect(serialized).toBe(
-        '<p><a href="#some-heading" class="internal">#Some Heading</a></p>',
+        '<p><a href="#heading-on-same-page" class="internal">#Heading On Same Page</a></p>',
       );
     });
 
@@ -71,20 +96,6 @@ describe("micromark-extension-wiki-link", () => {
         '<p><a href="/some/folder/Wiki Link" class="internal">Wiki Link</a></p>',
       );
     });
-
-    test("with special characters", () => {
-      const serialized = micromark(
-        "[[li nk-w(i)th-àcèô íã_a(n)d_underline!:ª%@'*º$ °~./\\#LI NK-W(i)th-àcèô íã_a(n)d_uNdErlinE!:ª%@'*º$ °~./\\]]",
-        "ascii",
-        {
-          extensions: [syntax()],
-          htmlExtensions: [html()],
-        },
-      );
-      expect(serialized).toBe(
-        `<p><a href="li nk-w(i)th-àcèô íã_a(n)d_underline!:ª%@'*º$ °~./\\#li-nk-w(i)th-àcèô-íã_a(n)d_underline!:ª%@'*º$-°~./\\" class="internal new">li nk-w(i)th-àcèô íã_a(n)d_underline!:ª%@'*º$ °~./\\#LI NK-W(i)th-àcèô íã_a(n)d_uNdErlinE!:ª%@'*º$ °~./\\</a></p>`,
-      );
-    });
   });
 
   describe("Parses an embed", () => {
@@ -95,6 +106,20 @@ describe("micromark-extension-wiki-link", () => {
       });
       expect(serialized).toBe(
         '<p><img src="My Image.jpg" alt="My Image" class="internal new" /></p>',
+      );
+    });
+
+    test("image with a matching permalink", () => {
+      const serialized = micromark("![[My Image.jpg]]", "ascii", {
+        extensions: [syntax()],
+        htmlExtensions: [
+          html({
+            permalinks: ["My Image.jpg"],
+          }),
+        ],
+      });
+      expect(serialized).toBe(
+        '<p><img src="My Image.jpg" alt="My Image" class="internal" /></p>',
       );
     });
 

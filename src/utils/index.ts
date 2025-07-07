@@ -1,4 +1,5 @@
 export { getPermalinks } from "./getPermalinks";
+import { slug } from "github-slugger";
 
 // File type definitions
 export type MarkdownFile = `.md`;
@@ -68,8 +69,7 @@ export const defaultUrlResolver = (targetPath: string): string => {
 
   let transformedPath = path.replace(/\/(index|README)$/, "");
 
-  const transformedHeading =
-    heading && heading.replace(/\s+/g, "-").toLowerCase(); // TODO use github-slugger instead
+  const transformedHeading = heading && slug(heading);
 
   if (transformedPath === "index" || transformedPath === "README") {
     transformedPath = "";

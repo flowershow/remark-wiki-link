@@ -29,6 +29,7 @@
     "access": "public"
   },
   "dependencies": {
+    "github-slugger": "^2.0.0",
     "mdast-util-to-markdown": "^2.1.2",
     "micromark-util-symbol": "^2.0.1"
   },

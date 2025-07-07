@@ -103,6 +103,39 @@ describe("mdast-util-wiki-link", () => {
       });
     });
 
+    test("with a heading with special characters", () => {
+      const ast = fromMarkdown(
+        "[[Wiki Link#Some.Heading.With-♥-Unicode and spaces]]",
+        {
+          extensions: [syntax()],
+          mdastExtensions: [
+            wikiLinkFromMarkdown({
+              permalinks: [],
+            }),
+          ],
+        },
+      );
+
+      visit(ast, "wikiLink", (node) => {
+        expect(node.value).toBe(
+          "Wiki Link#Some.Heading.With-♥-Unicode and spaces",
+        );
+        expect(node.data.path).toBe(
+          "Wiki Link#someheadingwith--unicode-and-spaces",
+        );
+        expect(node.data.alias).toBe(undefined);
+        expect(node.data.existing).toBe(false);
+        expect(node.data.hName).toBe("a");
+        expect(node.data.hProperties?.className).toBe("internal new");
+        expect(node.data.hProperties?.href).toBe(
+          "Wiki Link#someheadingwith--unicode-and-spaces",
+        );
+        expect(node.data.hChildren?.[0].value).toBe(
+          "Wiki Link#Some.Heading.With-♥-Unicode and spaces",
+        );
+      });
+    });
+
     test("to a heading on the same page", () => {
       const ast = fromMarkdown("[[#Some Heading]]", {
         extensions: [syntax()],
