@@ -1,5 +1,11 @@
 # remark-wiki-link
 
+## 2.0.2
+
+### Patch Changes
+
+- b8f5b07: Fixed release process (missing build output).
+
 ## 2.0.1
 
 ### Patch Changes
