@@ -24,6 +24,20 @@ describe("micromark-extension-wiki-link", () => {
       );
     });
 
+    test("to a README file with a matching permalink", () => {
+      const serialized = micromark("[[/blog/README]]", "ascii", {
+        extensions: [syntax()],
+        htmlExtensions: [
+          html({
+            permalinks: ["/blog"],
+          }),
+        ],
+      });
+      expect(serialized).toBe(
+        '<p><a href="/blog" class="internal">/blog/README</a></p>',
+      );
+    });
+
     test("with a heading", () => {
       const serialized = micromark("[[Wiki Link#Some Heading]]", "ascii", {
         extensions: [syntax()],

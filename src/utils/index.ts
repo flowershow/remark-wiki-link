@@ -63,23 +63,30 @@ export function isSupportedFileType(
   );
 }
 
-export const defaultUrlResolver = (targetPath: string): string => {
-  const [, path = "", heading = ""] =
-    targetPath.match(/^(.*?)(?:#(.*))?$/u) ?? [];
+/**
+ * Regular expression to extract path and heading from a wiki-link target path.
+ * Matches the entire string, capturing:
+ * 1. The path part (everything before #, if any)
+ * 2. The heading part (everything after #, if any)
+ */
+const WIKI_LINK_TARGET_PATTERN = /^(.*?)(?:#(.*))?$/u;
 
-  let transformedPath = path.replace(/\/(index|README)$/, "");
+export const defaultUrlResolver = (filePath: string): string => {
+  const [, rawPath = "", rawHeading = ""] =
+    WIKI_LINK_TARGET_PATTERN.exec(filePath) ?? [];
 
-  const transformedHeading = heading && slug(heading);
+  // Remove trailing /index and /README
+  const normalizedPath = rawPath.replace(/\/?(index|README)$/, "");
 
-  if (transformedPath === "index" || transformedPath === "README") {
-    transformedPath = "";
+  // Generate heading anchor if present
+  const headingAnchor = rawHeading ? `#${slug(rawHeading)}` : "";
+
+  // Special case: only heading anchor
+  if (headingAnchor && !normalizedPath) {
+    return headingAnchor;
   }
 
-  if (transformedHeading && !transformedPath) {
-    return "#" + transformedHeading;
-  }
-
-  return `${transformedPath}${transformedHeading && "#" + transformedHeading}`;
+  return normalizedPath + headingAnchor;
 };
 
 export const findMatchingPermalink = ({

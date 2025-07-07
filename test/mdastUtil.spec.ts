@@ -59,6 +59,28 @@ describe("mdast-util-wiki-link", () => {
       });
     });
 
+    test("to a README file with a matching permalink", () => {
+      const ast = fromMarkdown("[[/blog/README]]", {
+        extensions: [syntax()],
+        mdastExtensions: [
+          wikiLinkFromMarkdown({
+            permalinks: ["/blog"],
+          }),
+        ],
+      });
+
+      visit(ast, "wikiLink", (node) => {
+        expect(node.value).toBe("/blog/README");
+        expect(node.data.path).toBe("/blog");
+        expect(node.data.alias).toBe(undefined);
+        expect(node.data.existing).toBe(true);
+        expect(node.data.hName).toBe("a");
+        expect(node.data.hProperties?.className).toBe("internal");
+        expect(node.data.hProperties?.href).toBe("/blog");
+        expect(node.data.hChildren?.[0].value).toBe("/blog/README");
+      });
+    });
+
     test("with a heading", () => {
       const ast = fromMarkdown("[[Wiki Link#Some Heading]]", {
         extensions: [syntax()],
