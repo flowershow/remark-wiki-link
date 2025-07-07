@@ -4,6 +4,7 @@
   "description": "Parse and render wiki-style links, especially Obsidian style links.",
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --clean --sourcemap",
+    "prepare": "tsup src/index.ts --format esm,cjs --dts --clean --sourcemap",
     "test": "jest",
     "format": "npx prettier . --write",
     "changeset": "changeset",
