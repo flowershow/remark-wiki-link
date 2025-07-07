@@ -1,5 +1,11 @@
 # remark-wiki-link
 
+## 2.0.1
+
+### Patch Changes
+
+- 4a7311f: Use github-slugger for generating heading slugs in the default `urlResolver` function.
+
 ## 2.0.0
 
 ### Major Changes
