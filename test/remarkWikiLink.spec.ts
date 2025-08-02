@@ -87,6 +87,29 @@ describe("remark-wiki-link", () => {
           expect(node.data.hProperties?.alt).toBe("My Image");
         });
       });
+
+      test("custom urlResolver shouldn't transform embeds", () => {
+        const processor = unified()
+          .use(markdown)
+          .use(wikiLinkPlugin, {
+            permalinks: ["/assets/My Image.jpg"],
+            urlResolver: (page) => page.replace(/\s+/, "-").toLowerCase(),
+          });
+
+        let ast = processor.parse("![[My Image.jpg]]");
+
+        expect(select("embed", ast)).not.toEqual(null);
+
+        visit(ast, "embed", (node) => {
+          expect(node.value).toEqual("My Image.jpg");
+          expect(node.data?.path).toEqual("/assets/My Image.jpg");
+          expect(node.data?.alias).toEqual(undefined);
+          expect(node.data?.existing).toEqual(true);
+          expect(node.data.hProperties?.className).toBe("internal");
+          expect(node.data.hProperties?.src).toBe("/assets/My Image.jpg");
+          expect(node.data.hProperties?.alt).toBe("My Image");
+        });
+      });
     });
   });
 });

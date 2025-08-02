@@ -7,8 +7,8 @@ let warningIssued = false;
 
 export interface Options {
   format?:
-    | "regular" // (default) link paths will be treated as is (absolute or relative, depending on how they are written)
-    | "shortestPossible"; // link paths will be treated as "shortest-possible" absolute paths (e.g. "[[abc]]" would be matched to blog/abc permalink if provided in permalinks array)
+    | "regular" // link paths will be treated as is (absolute or relative, depending on how they are written)
+    | "shortestPossible"; // (default) link paths will be treated as "shortest-possible" absolute paths (e.g. "[[abc]]" would be matched to blog/abc permalink if provided in permalinks array)
   permalinks?: string[]; // list of URLs used to match wikilinks
   className?: string; // class to be added to all wikilinks (and embeds)
   newClassName?: string; // class to added to wikilink (and embeds) that don't have matching permalinks

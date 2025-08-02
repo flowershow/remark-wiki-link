@@ -11,7 +11,7 @@ import { Options } from "./remarkWikiLink";
 // Micromark HtmlExtension
 // https://github.com/micromark/micromark#htmlextension
 function html(opts: Options = {}): HtmlExtension {
-  const format = opts.format || "regular";
+  const format = opts.format || "shortestPossible";
   const permalinks = opts.permalinks || [];
   const className = opts.className || "internal";
   const newClassName = opts.newClassName || "new";
@@ -52,15 +52,18 @@ function html(opts: Options = {}): HtmlExtension {
       throw new Error("Target is required");
     }
 
-    const resolvedPath = urlResolver(target);
+    const resolvedPath = token.type === "embed" ? target : urlResolver(target);
     const [, basePath = "", headingId = ""] =
-      resolvedPath.match(/^(.*?)(#.*)?$/u) || [];
+      token.type === "embed"
+        ? [, target]
+        : resolvedPath.match(/^(.*?)(#.*)?$/u) || [];
 
     const matchingPermalink = findMatchingPermalink({
       path: basePath,
       permalinks,
       format,
     });
+
     const finalPath = matchingPermalink ?? basePath;
     const existing = Boolean(
       matchingPermalink || (finalPath.length === 0 && headingId),

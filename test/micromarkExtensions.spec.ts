@@ -294,5 +294,20 @@ describe("micromark-extension-wiki-link", () => {
         '<p><a href="wiki-link" class="internal new">Wiki Link</a></p>',
       );
     });
+
+    test("custom urlResolver shouldn't transform embeds", () => {
+      const serialized = micromark("![[My Image.jpg]]", "ascii", {
+        extensions: [syntax()],
+        htmlExtensions: [
+          html({
+            permalinks: ["/assets/My Image.jpg"],
+            urlResolver: (page) => page.replace(/\s+/, "-").toLowerCase(),
+          }),
+        ],
+      });
+      expect(serialized).toBe(
+        '<p><img src="/assets/My Image.jpg" alt="My Image" class="internal" /></p>',
+      );
+    });
   });
 });

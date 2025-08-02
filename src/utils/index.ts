@@ -99,6 +99,7 @@ export const findMatchingPermalink = ({
   format?: "regular" | "shortestPossible";
 }): string | undefined => {
   if (format === "shortestPossible") {
+    console.log("SHORTEST");
     return permalinks.find((permalink) => permalink.endsWith(path));
   }
 

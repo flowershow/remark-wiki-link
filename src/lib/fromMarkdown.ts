@@ -13,7 +13,7 @@ import { Embed, WikiLink } from "mdast";
 import { Options } from "./remarkWikiLink";
 
 function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
-  const format = opts.format || "regular";
+  const format = opts.format || "shortestPossible";
   const permalinks = opts.permalinks || [];
   const className = opts.className || "internal";
   const newClassName = opts.newClassName || "new";
@@ -62,15 +62,18 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
       throw new Error("Empty node value");
     }
 
-    const resolvedPath = urlResolver(value);
+    const resolvedPath = token.type === "embed" ? value : urlResolver(value);
     const [, basePath = "", headingId = ""] =
-      resolvedPath.match(/^(.*?)(#.*)?$/u) || [];
+      token.type === "embed"
+        ? [, value]
+        : resolvedPath.match(/^(.*?)(#.*)?$/u) || [];
 
     const matchingPermalink = findMatchingPermalink({
       path: basePath,
       permalinks,
       format,
     });
+    console.log({ basePath, permalinks, matchingPermalink });
     const finalPath = matchingPermalink ?? basePath;
     const existing = Boolean(
       matchingPermalink ?? (finalPath.length === 0 && headingId),
