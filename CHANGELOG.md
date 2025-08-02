@@ -1,5 +1,11 @@
 # remark-wiki-link
 
+## 2.0.4
+
+### Patch Changes
+
+- 0e1dc6c: Remove unneeded console logs.
+
 ## 2.0.3
 
 ### Patch Changes
