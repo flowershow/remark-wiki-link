@@ -1,5 +1,11 @@
 # remark-wiki-link
 
+## 2.0.3
+
+### Patch Changes
+
+- 285449a: Don't resolve embeds with urlResolver.
+
 ## 2.0.2
 
 ### Patch Changes
