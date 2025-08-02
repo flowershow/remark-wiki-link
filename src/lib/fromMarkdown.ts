@@ -73,7 +73,6 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
       permalinks,
       format,
     });
-    console.log({ basePath, permalinks, matchingPermalink });
     const finalPath = matchingPermalink ?? basePath;
     const existing = Boolean(
       matchingPermalink ?? (finalPath.length === 0 && headingId),
