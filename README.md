@@ -97,7 +97,7 @@ If you're using shortest possible path format for your wiki links, you need to s
 ```javascript
 import { unified } from "unified";
 import remarkParse from "remark-parse";
-import wikiLinkPlugin from "@flowershow/remark-wiki-link-plus";
+import wikiLinkPlugin from "@flowershow/remark-wiki-link";
 import glob from "glob";
 
 const permalinks = glob
