@@ -1,5 +1,11 @@
 # remark-wiki-link
 
+## 2.1.0
+
+### Minor Changes
+
+- Fixes required to make it work with unified 11
+
 ## 2.0.4
 
 ### Patch Changes

@@ -37,6 +37,9 @@ declare module "micromark-util-types" {
   interface TokenTypeMap {
     embed: TokenType;
     embedMarker: TokenType; // The embed opening
+    embedCandidate: TokenType;
+    wikiLinkCandidate: TokenType;
+    wikiLinkOpenSequence: TokenType;
     wikiLink: TokenType;
     wikiLinkMarker: TokenType; // The opening and closing brackets
     wikiLinkData: TokenType; // The data between the brackets
