@@ -1,5 +1,11 @@
 # remark-wiki-link
 
+## 3.0.1
+
+### Patch Changes
+
+- Wiki-link regex fix
+
 ## 3.0.0
 
 ### Major Changes

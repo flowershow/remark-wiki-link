@@ -59,7 +59,6 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
       throw new Error("Empty node value");
     }
 
-    // heading keeps the #
     const [, targetPath = "", heading = ""] =
       value.match(WIKI_LINK_TARGET_PATTERN) || [];
 
@@ -77,8 +76,6 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
     if (!existing) {
       classNames += " " + newClassName;
     }
-
-    const resolvedWikiLink = `${matchingFilePath ?? targetPath}${heading}`;
 
     wikiLink.data.existing = existing;
 

@@ -53,7 +53,6 @@ function html(opts: Options = {}): HtmlExtension {
       throw new Error("Target is required");
     }
 
-    // heading keeps the #
     const [, targetPath = "", heading = ""] =
       target.match(WIKI_LINK_TARGET_PATTERN) || [];
 
