@@ -1,18 +1,19 @@
 import {
   defaultUrlResolver,
-  findMatchingPermalink,
+  findMatchingFilePath,
   isImageFile,
   isMarkdownFile,
   isPdfFile,
 } from "../utils";
 import type { CompileData, Handle, HtmlExtension } from "micromark-util-types";
 import { Options } from "./remarkWikiLink";
+import { WIKI_LINK_TARGET_PATTERN } from "../utils/const";
 
 // Micromark HtmlExtension
 // https://github.com/micromark/micromark#htmlextension
 function html(opts: Options = {}): HtmlExtension {
   const format = opts.format || "shortestPossible";
-  const permalinks = opts.permalinks || [];
+  const files = opts.files || [];
   const className = opts.className || "internal";
   const newClassName = opts.newClassName || "new";
   const urlResolver = opts.urlResolver || defaultUrlResolver;
@@ -52,21 +53,19 @@ function html(opts: Options = {}): HtmlExtension {
       throw new Error("Target is required");
     }
 
-    const resolvedPath = token.type === "embed" ? target : urlResolver(target);
-    const [, basePath = "", headingId = ""] =
-      token.type === "embed"
-        ? [, target]
-        : resolvedPath.match(/^(.*?)(#.*)?$/u) || [];
+    // heading keeps the #
+    const [, targetPath = "", heading = ""] =
+      target.match(WIKI_LINK_TARGET_PATTERN) || [];
 
-    const matchingPermalink = findMatchingPermalink({
-      path: basePath,
-      permalinks,
+    // /path/to/file.md
+    const matchingFilePath = findMatchingFilePath({
+      path: targetPath,
+      files,
       format,
     });
 
-    const finalPath = matchingPermalink ?? basePath;
     const existing = Boolean(
-      matchingPermalink || (finalPath.length === 0 && headingId),
+      matchingFilePath ?? (targetPath.length === 0 && heading),
     );
 
     let classNames = className;
@@ -74,9 +73,17 @@ function html(opts: Options = {}): HtmlExtension {
       classNames += " " + newClassName;
     }
 
+    // Apply urlResolver to the matched file path (or original if no match)
+    // For embeds, don't apply urlResolver
+    const url = urlResolver({
+      filePath: matchingFilePath ?? targetPath,
+      heading,
+      isEmbed: token.type === "embed",
+    });
+
     if (token.type !== "embed") {
       const text = alias ?? target;
-      this.tag(`<a href="${finalPath + headingId}" class="${classNames}">`);
+      this.tag(`<a href="${url}" class="${classNames}">`);
       this.raw(text);
       this.tag("</a>");
       return;
@@ -85,16 +92,14 @@ function html(opts: Options = {}): HtmlExtension {
         target.match(/^(.+?)(?:\.([^.]+))?$/) ?? [];
 
       if (isMarkdownFile(extension)) {
-        this.tag(
-          `<a href="${finalPath + headingId}" class="${classNames} transclusion">`,
-        );
+        this.tag(`<a href="${url}" class="${classNames} transclusion">`);
         this.raw(name);
         this.tag("</a>");
         return;
       }
 
       if (isImageFile(extension)) {
-        let imgAttributes = `src="${finalPath}" alt="${name}" class="${classNames}"`;
+        let imgAttributes = `src="${url}" alt="${name}" class="${classNames}"`;
 
         const [, width, height] = alias?.match(/^(\d+)(?:x(\d+))?$/) ?? [];
         if (width) {
@@ -107,13 +112,13 @@ function html(opts: Options = {}): HtmlExtension {
 
       if (isPdfFile(extension)) {
         this.tag(
-          `<iframe width="100%" src="${finalPath}#toolbar=0" title="${name}" class="${classNames}" />`,
+          `<iframe width="100%" src="${url}" title="${name}" class="${classNames}" />`,
         );
         return;
       }
 
       // Unsupported file formats
-      this.tag(`<a href="${finalPath}" class="${classNames} unsupported">`);
+      this.tag(`<a href="${url}" class="${classNames} unsupported">`);
       this.raw(target);
       this.tag("</a>");
     }

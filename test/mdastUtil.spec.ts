@@ -15,12 +15,12 @@ import { WikiLink } from "mdast";
 
 describe("mdast-util-wiki-link", () => {
   describe("(fromMarkdown) Parses a wikilink", () => {
-    test("that has a matching permalink", () => {
+    test("that has a matching file", () => {
       const ast = fromMarkdown("[[Wiki Link]]", {
         extensions: [syntax()],
         mdastExtensions: [
           wikiLinkFromMarkdown({
-            permalinks: ["Wiki Link"],
+            files: ["Wiki Link.md"],
           }),
         ],
       });
@@ -37,12 +37,12 @@ describe("mdast-util-wiki-link", () => {
       });
     });
 
-    test("that doesn't have a matching permalink", () => {
+    test("that doesn't have a matching file", () => {
       const ast = fromMarkdown("[[New Page]]", {
         extensions: [syntax()],
         mdastExtensions: [
           wikiLinkFromMarkdown({
-            permalinks: [],
+            files: [],
           }),
         ],
       });
@@ -59,12 +59,12 @@ describe("mdast-util-wiki-link", () => {
       });
     });
 
-    test("to a README file with a matching permalink", () => {
+    test("to a README file with a matching file", () => {
       const ast = fromMarkdown("[[/blog/README]]", {
         extensions: [syntax()],
         mdastExtensions: [
           wikiLinkFromMarkdown({
-            permalinks: ["/blog"],
+            files: ["/blog/README.md"],
           }),
         ],
       });
@@ -86,7 +86,7 @@ describe("mdast-util-wiki-link", () => {
         extensions: [syntax()],
         mdastExtensions: [
           wikiLinkFromMarkdown({
-            permalinks: [],
+            files: [],
           }),
         ],
       });
@@ -108,7 +108,7 @@ describe("mdast-util-wiki-link", () => {
         extensions: [syntax()],
         mdastExtensions: [
           wikiLinkFromMarkdown({
-            permalinks: [],
+            files: [],
           }),
         ],
       });
@@ -132,7 +132,7 @@ describe("mdast-util-wiki-link", () => {
           extensions: [syntax()],
           mdastExtensions: [
             wikiLinkFromMarkdown({
-              permalinks: [],
+              files: [],
             }),
           ],
         },
@@ -163,7 +163,7 @@ describe("mdast-util-wiki-link", () => {
         extensions: [syntax()],
         mdastExtensions: [
           wikiLinkFromMarkdown({
-            permalinks: [],
+            files: [],
           }),
         ],
       });
@@ -185,7 +185,7 @@ describe("mdast-util-wiki-link", () => {
         extensions: [syntax()],
         mdastExtensions: [
           wikiLinkFromMarkdown({
-            permalinks: [],
+            files: [],
           }),
         ],
       });
@@ -202,13 +202,13 @@ describe("mdast-util-wiki-link", () => {
       });
     });
 
-    test("with Obsidian-style shortest possible path format and a matching permalink", () => {
+    test("with Obsidian-style shortest possible path format and a matching file", () => {
       const ast = fromMarkdown("[[Wiki Link]]", {
         extensions: [syntax()],
         mdastExtensions: [
           wikiLinkFromMarkdown({
             format: "shortestPossible",
-            permalinks: ["/some/folder/Wiki Link"],
+            files: ["/some/folder/Wiki Link.md"],
           }),
         ],
       });
@@ -278,7 +278,7 @@ describe("mdast-util-wiki-link", () => {
         expect(node.data.existing).toBe(false);
         expect(node.data.hName).toBe("iframe");
         expect(node.data.hProperties?.className).toBe("internal new");
-        expect(node.data.hProperties?.src).toBe("My File.pdf#toolbar=0");
+        expect(node.data.hProperties?.src).toBe("My File.pdf");
         expect(node.data.hProperties?.title).toBe("My File");
       });
     });

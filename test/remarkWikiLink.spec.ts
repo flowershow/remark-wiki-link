@@ -2,17 +2,16 @@ import markdown from "remark-parse";
 import { unified } from "unified";
 import { select } from "unist-util-select";
 import { visit } from "unist-util-visit";
-import { Node } from "unist";
 
 import wikiLinkPlugin from "../src/lib/remarkWikiLink";
 
 describe("remark-wiki-link", () => {
   describe("Parses a wikilink", () => {
-    test("that has a matching permalink", () => {
+    test("that has a matching file", () => {
       const processor = unified()
         .use(markdown)
         .use(wikiLinkPlugin, {
-          permalinks: ["Wiki Link"],
+          files: ["Wiki Link.md"],
         });
 
       let ast = processor.parse("[[Wiki Link]]");
@@ -31,7 +30,7 @@ describe("remark-wiki-link", () => {
       });
     });
 
-    test("that doesn't have a matching permalink", () => {
+    test("that doesn't have a matching file", () => {
       const processor = unified().use(markdown).use(wikiLinkPlugin);
 
       let ast = processor.parse("[[New Page]]");
@@ -69,6 +68,26 @@ describe("remark-wiki-link", () => {
       });
     });
 
+    test("resolves to shortest path when multiple files match in shortestPossible mode", () => {
+      const processor = unified()
+        .use(markdown)
+        .use(wikiLinkPlugin, {
+          files: ["/blog/test.md", "/test.md", "/docs/guide/test.md"],
+          format: "shortestPossible",
+        });
+
+      let ast = processor.parse("[[test]]");
+
+      expect(select("wikiLink", ast)).not.toEqual(null);
+
+      visit(ast, "wikiLink", (node) => {
+        expect(node.value).toBe("test");
+        expect(node.data.path).toBe("/test");
+        expect(node.data.existing).toBe(true);
+        expect(node.data.hProperties?.href).toBe("/test");
+      });
+    });
+
     describe("Parses an embed", () => {
       test("image", () => {
         const processor = unified().use(markdown).use(wikiLinkPlugin);
@@ -88,12 +107,25 @@ describe("remark-wiki-link", () => {
         });
       });
 
-      test("custom urlResolver shouldn't transform embeds", () => {
+      test("custom urlResolver", () => {
+        const urlResolver = ({
+          filePath,
+          isEmbed,
+        }: {
+          filePath: string;
+          isEmbed: boolean;
+        }) => {
+          if (!isEmbed) {
+            return filePath.replace(/\s+/g, "-").toLowerCase();
+          }
+          return filePath;
+        };
+
         const processor = unified()
           .use(markdown)
           .use(wikiLinkPlugin, {
-            permalinks: ["/assets/My Image.jpg"],
-            urlResolver: (page) => page.replace(/\s+/, "-").toLowerCase(),
+            files: ["/assets/My Image.jpg"],
+            urlResolver,
           });
 
         let ast = processor.parse("![[My Image.jpg]]");

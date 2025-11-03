@@ -8,11 +8,15 @@ let warningIssued = false;
 export interface Options {
   format?:
     | "regular" // link paths will be treated as is (absolute or relative, depending on how they are written)
-    | "shortestPossible"; // (default) link paths will be treated as "shortest-possible" absolute paths (e.g. "[[abc]]" would be matched to blog/abc permalink if provided in permalinks array)
-  permalinks?: string[]; // list of URLs used to match wikilinks
+    | "shortestPossible"; // (default) link paths will be treated as "shortest-possible" absolute paths (e.g. "[[abc]]" would be matched to blog/abc file if provided in files array)
+  files?: string[]; // list of file paths used to match wikilinks
   className?: string; // class to be added to all wikilinks (and embeds)
-  newClassName?: string; // class to added to wikilink (and embeds) that don't have matching permalinks
-  urlResolver?: (name: string) => string; // resolve wikilink (or embed) path to a URL path (where target is: [[target|alias]] or ![[target]])
+  newClassName?: string; // class to added to wikilink (and embeds) that don't have matching files
+  urlResolver?: (opts: {
+    filePath: string;
+    isEmbed: boolean;
+    heading: string;
+  }) => string; // resolve matched file path to a URL path (applied after matching)
 }
 
 function remarkWikiLink(this: Processor, opts: Options & SyntaxOptions = {}) {

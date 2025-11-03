@@ -1,5 +1,6 @@
-export { getPermalinks } from "./getPermalinks";
 import { slug } from "github-slugger";
+import fs from "fs";
+import path from "path";
 
 // File type definitions
 export type MarkdownFile = `.md`;
@@ -63,44 +64,80 @@ export function isSupportedFileType(
   );
 }
 
-/**
- * Regular expression to extract path and heading from a wiki-link target path.
- * Matches the entire string, capturing:
- * 1. The path part (everything before #, if any)
- * 2. The heading part (everything after #, if any)
- */
-const WIKI_LINK_TARGET_PATTERN = /^(.*?)(?:#(.*))?$/u;
-
-export const defaultUrlResolver = (filePath: string): string => {
-  const [, rawPath = "", rawHeading = ""] =
-    WIKI_LINK_TARGET_PATTERN.exec(filePath) ?? [];
+export const defaultUrlResolver = ({
+  filePath,
+  heading,
+  isEmbed = false,
+}: {
+  filePath: string;
+  heading?: string;
+  isEmbed: boolean;
+}): string => {
+  if (isEmbed) {
+    return filePath;
+  }
+  const pathWithNoExtension = filePath.replace(/\.(mdx?|md)/, "");
 
   // Remove trailing /index and /README
-  const normalizedPath = rawPath.replace(/\/?(index|README)$/, "");
+  const normalizedPath = pathWithNoExtension.replace(/\/?(index|README)$/, "");
 
-  // Generate heading anchor if present
-  const headingAnchor = rawHeading ? `#${slug(rawHeading)}` : "";
+  // Generate heading id if present
+  const headingId = heading ? `#${slug(heading)}` : "";
 
   // Special case: only heading anchor
-  if (headingAnchor && !normalizedPath) {
-    return headingAnchor;
+  if (headingId && !normalizedPath) {
+    return headingId;
   }
 
-  return normalizedPath + headingAnchor;
+  return (normalizedPath || "/") + headingId;
 };
 
-export const findMatchingPermalink = ({
+export const findMatchingFilePath = ({
   path,
-  permalinks,
+  files,
   format,
 }: {
-  path: string;
-  permalinks: string[];
+  path: string; // wiki-link target (e.g. some/file in [[some/file#Some heading|Alias]])
+  files: string[]; // file paths with  (with or without extensions)
   format?: "regular" | "shortestPossible";
 }): string | undefined => {
-  if (format === "shortestPossible") {
-    return permalinks.find((permalink) => permalink.endsWith(path));
+  if (path.length === 0) {
+    return undefined;
   }
 
-  return permalinks.find((permalink) => permalink === path);
+  if (format === "regular") {
+    return files.find((file) => {
+      const fileWithoutExt = file.replace(/\.(mdx?|md)$/, "");
+      return fileWithoutExt === path;
+    });
+  }
+
+  // Find all files that end with the path (without extension for markdown files)
+  const matchingFiles = files.filter((file) => {
+    const fileWithoutExt = file.replace(/\.(mdx?|md)$/, "");
+    return fileWithoutExt.endsWith(path);
+  });
+
+  if (matchingFiles.length === 0) {
+    return undefined;
+  }
+
+  // Sort by path length (shortest first) to prioritize files closer to root
+  // This ensures [[test]] resolves to /test.md instead of /blog/test.md
+  return matchingFiles.sort((a, b) => a.length - b.length)[0];
+};
+
+const recursiveGetFiles = (dir: string) => {
+  const dirents = fs.readdirSync(dir, { withFileTypes: true });
+  const files = dirents
+    .filter((dirent) => dirent.isFile())
+    .map((dirent) => path.join(dir, dirent.name));
+  const dirs = dirents
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => path.join(dir, dirent.name));
+  for (const d of dirs) {
+    files.push(...recursiveGetFiles(d));
+  }
+
+  return files;
 };

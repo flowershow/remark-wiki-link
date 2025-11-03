@@ -4,17 +4,17 @@ import { micromark } from "micromark";
 
 describe("micromark-extension-wiki-link", () => {
   describe("Parses a wikilink", () => {
-    test("that has a matching permalink", () => {
+    test("that has a matching file", () => {
       const serialized = micromark("[[Wiki Link]]", "ascii", {
         extensions: [syntax()],
-        htmlExtensions: [html({ permalinks: ["Wiki Link"] })],
+        htmlExtensions: [html({ files: ["Wiki Link.md"] })],
       });
       expect(serialized).toBe(
         '<p><a href="Wiki Link" class="internal">Wiki Link</a></p>',
       );
     });
 
-    test("that doesn't have a matching permalink", () => {
+    test("that doesn't have a matching file", () => {
       const serialized = micromark("[[New Page]]", "ascii", {
         extensions: [syntax()],
         htmlExtensions: [html()],
@@ -24,12 +24,12 @@ describe("micromark-extension-wiki-link", () => {
       );
     });
 
-    test("to a README file with a matching permalink", () => {
+    test("to a README file with a matching file", () => {
       const serialized = micromark("[[/blog/README]]", "ascii", {
         extensions: [syntax()],
         htmlExtensions: [
           html({
-            permalinks: ["/blog"],
+            files: ["/blog/README.md"],
           }),
         ],
       });
@@ -96,12 +96,12 @@ describe("micromark-extension-wiki-link", () => {
       );
     });
 
-    test("with Obsidian-style shortest possible path format and a matching permalink", () => {
+    test("with Obsidian-style shortest possible path format and a matching file", () => {
       const serialized = micromark("[[Wiki Link]]", "ascii", {
         extensions: [syntax()],
         htmlExtensions: [
           html({
-            permalinks: ["/some/folder/Wiki Link"],
+            files: ["/some/folder/Wiki Link.md"],
             format: "shortestPossible",
           }),
         ],
@@ -123,12 +123,12 @@ describe("micromark-extension-wiki-link", () => {
       );
     });
 
-    test("image with a matching permalink", () => {
+    test("image with a matching file", () => {
       const serialized = micromark("![[My Image.jpg]]", "ascii", {
         extensions: [syntax()],
         htmlExtensions: [
           html({
-            permalinks: ["My Image.jpg"],
+            files: ["My Image.jpg"],
           }),
         ],
       });
@@ -143,7 +143,7 @@ describe("micromark-extension-wiki-link", () => {
         htmlExtensions: [html()],
       });
       expect(serialized).toBe(
-        '<p><iframe width="100%" src="My Document.pdf#toolbar=0" title="My Document" class="internal new" /></p>',
+        '<p><iframe width="100%" src="My Document.pdf" title="My Document" class="internal new" /></p>',
       );
     });
 
@@ -157,23 +157,23 @@ describe("micromark-extension-wiki-link", () => {
       );
     });
 
-    test("image with a matching permalink", () => {
+    test("image with a matching file", () => {
       const serialized = micromark("![[My Image.jpg]]", "ascii", {
         extensions: [syntax()],
-        htmlExtensions: [html({ permalinks: ["My Image.jpg"] })],
+        htmlExtensions: [html({ files: ["My Image.jpg"] })],
       });
       expect(serialized).toBe(
         '<p><img src="My Image.jpg" alt="My Image" class="internal" /></p>',
       );
     });
 
-    test("image with a matching permalink and shortestPossible path format", () => {
+    test("image with a matching file and shortestPossible path format", () => {
       const serialized = micromark("![[My Image.jpg]]", "ascii", {
         extensions: [syntax()],
         htmlExtensions: [
           html({
             format: "shortestPossible",
-            permalinks: ["/assets/My Image.jpg"],
+            files: ["/assets/My Image.jpg"],
           }),
         ],
       });
@@ -185,7 +185,7 @@ describe("micromark-extension-wiki-link", () => {
     test("image with width", () => {
       const serialized = micromark("![[My Image.jpg|200]]", "ascii", {
         extensions: [syntax()],
-        htmlExtensions: [html({ permalinks: ["My Image.jpg"] })],
+        htmlExtensions: [html({ files: ["My Image.jpg"] })],
       });
       expect(serialized).toBe(
         '<p><img src="My Image.jpg" alt="My Image" class="internal" width="200" height="200" /></p>',
@@ -195,7 +195,7 @@ describe("micromark-extension-wiki-link", () => {
     test("image with width and height", () => {
       const serialized = micromark("![[My Image.jpg|200x300]]", "ascii", {
         extensions: [syntax()],
-        htmlExtensions: [html({ permalinks: ["My Image.jpg"] })],
+        htmlExtensions: [html({ files: ["My Image.jpg"] })],
       });
       expect(serialized).toBe(
         '<p><img src="My Image.jpg" alt="My Image" class="internal" width="200" height="300" /></p>',
@@ -282,31 +282,45 @@ describe("micromark-extension-wiki-link", () => {
     });
 
     test("custom urlResolver", () => {
-      const serialized = micromark("[[Wiki Link]]", "ascii", {
-        extensions: [syntax()],
-        htmlExtensions: [
-          html({
-            urlResolver: (page) => page.replace(/\s+/, "-").toLowerCase(),
-          }),
-        ],
-      });
-      expect(serialized).toBe(
-        '<p><a href="wiki-link" class="internal new">Wiki Link</a></p>',
-      );
-    });
+      const urlResolver = ({
+        filePath,
+        isEmbed,
+      }: {
+        filePath: string;
+        isEmbed: boolean;
+      }) => {
+        if (!isEmbed) {
+          // Remove .md extension and then process
+          const pathWithoutExt = filePath.replace(/\.md$/, "");
+          return pathWithoutExt.replace(/\s+/g, "-").toLowerCase();
+        }
+        return filePath;
+      };
 
-    test("custom urlResolver shouldn't transform embeds", () => {
       const serialized = micromark("![[My Image.jpg]]", "ascii", {
         extensions: [syntax()],
         htmlExtensions: [
           html({
-            permalinks: ["/assets/My Image.jpg"],
-            urlResolver: (page) => page.replace(/\s+/, "-").toLowerCase(),
+            files: ["/assets/My Image.jpg"],
+            urlResolver,
           }),
         ],
       });
       expect(serialized).toBe(
         '<p><img src="/assets/My Image.jpg" alt="My Image" class="internal" /></p>',
+      );
+
+      const serialized2 = micromark("[[post]]", "ascii", {
+        extensions: [syntax()],
+        htmlExtensions: [
+          html({
+            files: ["/blog/post.md"],
+            urlResolver,
+          }),
+        ],
+      });
+      expect(serialized2).toBe(
+        '<p><a href="/blog/post" class="internal">post</a></p>',
       );
     });
   });

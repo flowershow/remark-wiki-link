@@ -1,5 +1,33 @@
 # remark-wiki-link
 
+## 3.0.0
+
+### Major Changes
+
+- 🚨 Breaking: New Wiki-Link Resolution Strategy
+
+  This release introduces a more robust wiki-link resolution approach.
+
+  **🔧 Key Changes:**
+  - `files` replaces `permalinks`
+    - The plugin now accepts a list of `files` (file paths) instead of `permalinks` (published URLs) and applies `urlResolver` only after file path is matched
+  - `urlResolver` API updated
+    - Updated signature:
+      ```
+      urlResolver({
+        filePath,
+        heading,
+        isEmbed
+      }: {
+        filePath: string,
+        heading: string,
+        isEmbed: boolean
+      })
+      ```
+
+  **Other changes:**
+  - improved shortest path matching
+
 ## 2.1.0
 
 ### Minor Changes

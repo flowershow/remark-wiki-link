@@ -4,17 +4,18 @@ import type {
 } from "mdast-util-from-markdown";
 import {
   defaultUrlResolver,
-  findMatchingPermalink,
+  findMatchingFilePath,
   isImageFile,
   isMarkdownFile,
   isPdfFile,
 } from "../utils";
 import { Embed, WikiLink } from "mdast";
 import { Options } from "./remarkWikiLink";
+import { WIKI_LINK_TARGET_PATTERN } from "../utils/const";
 
 function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
   const format = opts.format || "shortestPossible";
-  const permalinks = opts.permalinks || [];
+  const files = opts.files || [];
   const className = opts.className || "internal";
   const newClassName = opts.newClassName || "new";
   const urlResolver = opts.urlResolver || defaultUrlResolver;
@@ -49,10 +50,6 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
   const exitWikiLink: Handle = function (this, token) {
     const wikiLink = top(this.stack);
 
-    // if (!wikiLink || !wikiLink.data) {
-    //   throw new Error("Missing wikilink data");
-    // }
-
     const {
       value,
       data: { alias },
@@ -62,20 +59,18 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
       throw new Error("Empty node value");
     }
 
-    const resolvedPath = token.type === "embed" ? value : urlResolver(value);
-    const [, basePath = "", headingId = ""] =
-      token.type === "embed"
-        ? [, value]
-        : resolvedPath.match(/^(.*?)(#.*)?$/u) || [];
+    // heading keeps the #
+    const [, targetPath = "", heading = ""] =
+      value.match(WIKI_LINK_TARGET_PATTERN) || [];
 
-    const matchingPermalink = findMatchingPermalink({
-      path: basePath,
-      permalinks,
+    const matchingFilePath = findMatchingFilePath({
+      path: targetPath,
+      files,
       format,
     });
-    const finalPath = matchingPermalink ?? basePath;
+
     const existing = Boolean(
-      matchingPermalink ?? (finalPath.length === 0 && headingId),
+      matchingFilePath ?? (targetPath.length === 0 && heading),
     );
 
     let classNames = className;
@@ -83,14 +78,25 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
       classNames += " " + newClassName;
     }
 
+    const resolvedWikiLink = `${matchingFilePath ?? targetPath}${heading}`;
+
     wikiLink.data.existing = existing;
-    wikiLink.data.path = finalPath + headingId;
+
+    // Apply urlResolver to the matched file path (or original if no match)
+    // For embeds, don't apply urlResolver
+    const url = urlResolver({
+      filePath: matchingFilePath ?? targetPath,
+      heading,
+      isEmbed: token.type === "embed",
+    });
+
+    wikiLink.data.path = url;
 
     if (token.type !== "embed") {
       const text = alias ?? value;
       wikiLink.data.hName = "a";
       wikiLink.data.hProperties = {
-        href: finalPath + headingId,
+        href: url,
         className: classNames,
       };
       wikiLink.data.hChildren = [{ type: "text", value: text }];
@@ -102,7 +108,7 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
         wikiLink.data.hName = "a";
         wikiLink.data.hProperties = {
           className: classNames + " transclusion",
-          src: finalPath,
+          src: url,
         };
         wikiLink.data.hChildren = [{ type: "text", value: name }];
       } else if (isImageFile(extension)) {
@@ -112,7 +118,7 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
         }
         wikiLink.data.hName = "img";
         wikiLink.data.hProperties = {
-          src: finalPath,
+          src: url,
           alt: name,
           className: classNames,
           width: width ?? undefined,
@@ -122,7 +128,7 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
         wikiLink.data.hName = "iframe";
         wikiLink.data.hProperties = {
           width: "100%",
-          src: `${finalPath}#toolbar=0`,
+          src: url,
           title: name,
           className: classNames,
         };
@@ -130,7 +136,7 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
         // Unsupported file formats
         wikiLink.data.hName = "a";
         wikiLink.data.hProperties = {
-          href: finalPath,
+          href: url,
           className: classNames + " unsupported",
         };
         wikiLink.data.hChildren = [{ type: "text", value }];
