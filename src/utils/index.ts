@@ -71,7 +71,7 @@ export const defaultUrlResolver = ({
 }: {
   filePath: string;
   heading?: string;
-  isEmbed: boolean;
+  isEmbed?: boolean;
 }): string => {
   if (isEmbed) {
     return filePath;
