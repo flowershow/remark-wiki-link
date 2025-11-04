@@ -1,5 +1,27 @@
 # remark-wiki-link
 
+## 3.1.0
+
+### Minor Changes
+
+- Add support for video and audio media embeds with proper HTML5 tags
+
+  This release adds support for embedding video and audio files using wiki-link syntax:
+
+  **Video Support:**
+  - Supported formats: mp4, webm, ogv, mov, mkv
+  - Syntax: `![[video.mp4]]` generates `<video>` tag with controls
+  - Dimension support: `![[video.mp4|640x480]]` sets width and height
+  - Width-only support: `![[video.mp4|640]]` sets width, allowing browser to maintain aspect ratio
+
+  **Audio Support:**
+  - Supported formats: mp3, wav, ogg, m4a, flac, 3gp
+  - Syntax: `![[audio.mp3]]` generates `<audio>` tag with controls
+  - Includes fallback text for browsers that don't support the media tags
+
+  **Breaking Change:**
+  - When specifying only width for images and videos (e.g., `![[image.jpg|200]]`), the height attribute is no longer automatically set to match the width. This allows browsers to maintain the original aspect ratio of the media.
+
 ## 3.0.1
 
 ### Patch Changes

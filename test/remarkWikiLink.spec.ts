@@ -142,6 +142,85 @@ describe("remark-wiki-link", () => {
           expect(node.data.hProperties?.alt).toBe("My Image");
         });
       });
+
+      test("video", () => {
+        const processor = unified().use(markdown).use(wikiLinkPlugin);
+
+        let ast = processor.parse("![[My Video.mp4]]");
+
+        expect(select("embed", ast)).not.toEqual(null);
+
+        visit(ast, "embed", (node) => {
+          expect(node.value).toEqual("My Video.mp4");
+          expect(node.data?.path).toEqual("My Video.mp4");
+          expect(node.data?.alias).toEqual(undefined);
+          expect(node.data?.existing).toEqual(false);
+          expect(node.data.hName).toBe("video");
+          expect(node.data.hProperties?.className).toBe("internal new");
+          expect(node.data.hProperties?.src).toBe("My Video.mp4");
+          expect(node.data.hProperties?.controls).toBe(true);
+        });
+      });
+
+      test("video with dimensions", () => {
+        const processor = unified().use(markdown).use(wikiLinkPlugin);
+
+        let ast = processor.parse("![[My Video.mp4|640x480]]");
+
+        expect(select("embed", ast)).not.toEqual(null);
+
+        visit(ast, "embed", (node) => {
+          expect(node.value).toEqual("My Video.mp4");
+          expect(node.data?.path).toEqual("My Video.mp4");
+          // Alias is cleared when dimensions are parsed
+          expect(node.data?.alias).toEqual(undefined);
+          expect(node.data?.existing).toEqual(false);
+          expect(node.data.hName).toBe("video");
+          expect(node.data.hProperties?.className).toBe("internal new");
+          expect(node.data.hProperties?.src).toBe("My Video.mp4");
+          expect(node.data.hProperties?.controls).toBe(true);
+          expect(node.data.hProperties?.width).toBe("640");
+          expect(node.data.hProperties?.height).toBe("480");
+        });
+      });
+
+      test("audio", () => {
+        const processor = unified().use(markdown).use(wikiLinkPlugin);
+
+        let ast = processor.parse("![[My Audio.mp3]]");
+
+        expect(select("embed", ast)).not.toEqual(null);
+
+        visit(ast, "embed", (node) => {
+          expect(node.value).toEqual("My Audio.mp3");
+          expect(node.data?.path).toEqual("My Audio.mp3");
+          expect(node.data?.alias).toEqual(undefined);
+          expect(node.data?.existing).toEqual(false);
+          expect(node.data.hName).toBe("audio");
+          expect(node.data.hProperties?.className).toBe("internal new");
+          expect(node.data.hProperties?.src).toBe("My Audio.mp3");
+          expect(node.data.hProperties?.controls).toBe(true);
+        });
+      });
+
+      test("pdf", () => {
+        const processor = unified().use(markdown).use(wikiLinkPlugin);
+
+        let ast = processor.parse("![[My Document.pdf]]");
+
+        expect(select("embed", ast)).not.toEqual(null);
+
+        visit(ast, "embed", (node) => {
+          expect(node.value).toEqual("My Document.pdf");
+          expect(node.data?.path).toEqual("My Document.pdf");
+          expect(node.data?.alias).toEqual(undefined);
+          expect(node.data?.existing).toEqual(false);
+          expect(node.data.hName).toBe("iframe");
+          expect(node.data.hProperties?.className).toBe("internal new");
+          expect(node.data.hProperties?.src).toBe("My Document.pdf");
+          expect(node.data.hProperties?.title).toBe("My Document");
+        });
+      });
     });
   });
 });

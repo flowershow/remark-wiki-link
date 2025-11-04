@@ -8,6 +8,8 @@ import {
   isImageFile,
   isMarkdownFile,
   isPdfFile,
+  isAudioFile,
+  isVideoFile,
 } from "../utils";
 import { Embed, WikiLink } from "mdast";
 import { Options } from "./remarkWikiLink";
@@ -119,7 +121,7 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
           alt: name,
           className: classNames,
           width: width ?? undefined,
-          height: height ?? width ?? undefined,
+          height: height ?? undefined,
         };
       } else if (isPdfFile(extension)) {
         wikiLink.data.hName = "iframe";
@@ -129,6 +131,32 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
           title: name,
           className: classNames,
         };
+      } else if (isVideoFile(extension)) {
+        const [match, width, height] = alias?.match(/^(\d+)(?:x(\d+))?$/) ?? [];
+        if (match) {
+          wikiLink.data.alias = undefined;
+        }
+        wikiLink.data.hName = "video";
+        wikiLink.data.hProperties = {
+          src: url,
+          className: classNames,
+          controls: true,
+          width: width ?? undefined,
+          height: height ?? undefined,
+        };
+        wikiLink.data.hChildren = [
+          { type: "text", value: "Your browser does not support the video tag." },
+        ];
+      } else if (isAudioFile(extension)) {
+        wikiLink.data.hName = "audio";
+        wikiLink.data.hProperties = {
+          src: url,
+          className: classNames,
+          controls: true,
+        };
+        wikiLink.data.hChildren = [
+          { type: "text", value: "Your browser does not support the audio tag." },
+        ];
       } else {
         // Unsupported file formats
         wikiLink.data.hName = "a";

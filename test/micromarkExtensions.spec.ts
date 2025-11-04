@@ -188,7 +188,7 @@ describe("micromark-extension-wiki-link", () => {
         htmlExtensions: [html({ files: ["My Image.jpg"] })],
       });
       expect(serialized).toBe(
-        '<p><img src="My Image.jpg" alt="My Image" class="internal" width="200" height="200" /></p>',
+        '<p><img src="My Image.jpg" alt="My Image" class="internal" width="200" /></p>',
       );
     });
 
@@ -209,6 +209,46 @@ describe("micromark-extension-wiki-link", () => {
       });
       expect(serialized).toBe(
         '<p><a href="Some Page" class="internal new transclusion">Some Page</a></p>',
+      );
+    });
+
+    test("video", () => {
+      const serialized = micromark("![[My Video.mp4]]", "ascii", {
+        extensions: [syntax()],
+        htmlExtensions: [html()],
+      });
+      expect(serialized).toBe(
+        '<p><video src="My Video.mp4" class="internal new" controls>Your browser does not support the video tag.</video></p>',
+      );
+    });
+
+    test("video with dimensions", () => {
+      const serialized = micromark("![[My Video.mp4|640x480]]", "ascii", {
+        extensions: [syntax()],
+        htmlExtensions: [html()],
+      });
+      expect(serialized).toBe(
+        '<p><video src="My Video.mp4" class="internal new" controls width="640" height="480">Your browser does not support the video tag.</video></p>',
+      );
+    });
+
+    test("video with width only", () => {
+      const serialized = micromark("![[My Video.mp4|640]]", "ascii", {
+        extensions: [syntax()],
+        htmlExtensions: [html()],
+      });
+      expect(serialized).toBe(
+        '<p><video src="My Video.mp4" class="internal new" controls width="640">Your browser does not support the video tag.</video></p>',
+      );
+    });
+
+    test("audio", () => {
+      const serialized = micromark("![[My Audio.mp3]]", "ascii", {
+        extensions: [syntax()],
+        htmlExtensions: [html()],
+      });
+      expect(serialized).toBe(
+        '<p><audio src="My Audio.mp3" class="internal new" controls>Your browser does not support the audio tag.</audio></p>',
       );
     });
   });

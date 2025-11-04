@@ -4,6 +4,8 @@ import {
   isImageFile,
   isMarkdownFile,
   isPdfFile,
+  isAudioFile,
+  isVideoFile,
 } from "../utils";
 import type { CompileData, Handle, HtmlExtension } from "micromark-util-types";
 import { Options } from "./remarkWikiLink";
@@ -102,7 +104,10 @@ function html(opts: Options = {}): HtmlExtension {
 
         const [, width, height] = alias?.match(/^(\d+)(?:x(\d+))?$/) ?? [];
         if (width) {
-          imgAttributes += ` width="${width}" height="${height ?? width}"`;
+          imgAttributes += ` width="${width}"`;
+          if (height) {
+            imgAttributes += ` height="${height}"`;
+          }
         }
 
         this.tag(`<img ${imgAttributes} />`);
@@ -113,6 +118,30 @@ function html(opts: Options = {}): HtmlExtension {
         this.tag(
           `<iframe width="100%" src="${url}" title="${name}" class="${classNames}" />`,
         );
+        return;
+      }
+
+      if (isVideoFile(extension)) {
+        let videoAttributes = `src="${url}" class="${classNames}" controls`;
+        
+        const [, width, height] = alias?.match(/^(\d+)(?:x(\d+))?$/) ?? [];
+        if (width) {
+          videoAttributes += ` width="${width}"`;
+          if (height) {
+            videoAttributes += ` height="${height}"`;
+          }
+        }
+
+        this.tag(`<video ${videoAttributes}>`);
+        this.raw(`Your browser does not support the video tag.`);
+        this.tag(`</video>`);
+        return;
+      }
+
+      if (isAudioFile(extension)) {
+        this.tag(`<audio src="${url}" class="${classNames}" controls>`);
+        this.raw(`Your browser does not support the audio tag.`);
+        this.tag(`</audio>`);
         return;
       }
 

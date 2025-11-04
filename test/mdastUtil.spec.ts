@@ -282,6 +282,126 @@ describe("mdast-util-wiki-link", () => {
         expect(node.data.hProperties?.title).toBe("My File");
       });
     });
+
+    test("video", () => {
+      const ast = fromMarkdown("![[My Video.mp4]]", {
+        extensions: [syntax()],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
+
+      visit(ast, "embed", (node) => {
+        expect(node.value).toBe("My Video.mp4");
+        expect(node.data.path).toBe("My Video.mp4");
+        expect(node.data.alias).toBe(undefined);
+        expect(node.data.existing).toBe(false);
+        expect(node.data.hName).toBe("video");
+        expect(node.data.hProperties?.className).toBe("internal new");
+        expect(node.data.hProperties?.src).toBe("My Video.mp4");
+        expect(node.data.hProperties?.controls).toBe(true);
+        expect(node.data.hChildren?.[0].value).toBe(
+          "Your browser does not support the video tag.",
+        );
+      });
+    });
+
+    test("video with dimensions", () => {
+      const ast = fromMarkdown("![[My Video.mp4|640x480]]", {
+        extensions: [syntax()],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
+
+      visit(ast, "embed", (node) => {
+        expect(node.value).toBe("My Video.mp4");
+        expect(node.data.path).toBe("My Video.mp4");
+        // Alias is cleared when dimensions are parsed
+        expect(node.data.alias).toBe(undefined);
+        expect(node.data.existing).toBe(false);
+        expect(node.data.hName).toBe("video");
+        expect(node.data.hProperties?.className).toBe("internal new");
+        expect(node.data.hProperties?.src).toBe("My Video.mp4");
+        expect(node.data.hProperties?.controls).toBe(true);
+        expect(node.data.hProperties?.width).toBe("640");
+        expect(node.data.hProperties?.height).toBe("480");
+        expect(node.data.hChildren?.[0].value).toBe(
+          "Your browser does not support the video tag.",
+        );
+      });
+    });
+
+    test("video with width only", () => {
+      const ast = fromMarkdown("![[My Video.mp4|640]]", {
+        extensions: [syntax()],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
+
+      visit(ast, "embed", (node) => {
+        expect(node.value).toBe("My Video.mp4");
+        expect(node.data.path).toBe("My Video.mp4");
+        expect(node.data.alias).toBe(undefined);
+        expect(node.data.existing).toBe(false);
+        expect(node.data.hName).toBe("video");
+        expect(node.data.hProperties?.className).toBe("internal new");
+        expect(node.data.hProperties?.src).toBe("My Video.mp4");
+        expect(node.data.hProperties?.controls).toBe(true);
+        expect(node.data.hProperties?.width).toBe("640");
+        // Height should be undefined to maintain aspect ratio
+        expect(node.data.hProperties?.height).toBe(undefined);
+      });
+    });
+
+    test("audio", () => {
+      const ast = fromMarkdown("![[My Audio.mp3]]", {
+        extensions: [syntax()],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
+
+      visit(ast, "embed", (node) => {
+        expect(node.value).toBe("My Audio.mp3");
+        expect(node.data.path).toBe("My Audio.mp3");
+        expect(node.data.alias).toBe(undefined);
+        expect(node.data.existing).toBe(false);
+        expect(node.data.hName).toBe("audio");
+        expect(node.data.hProperties?.className).toBe("internal new");
+        expect(node.data.hProperties?.src).toBe("My Audio.mp3");
+        expect(node.data.hProperties?.controls).toBe(true);
+        expect(node.data.hChildren?.[0].value).toBe(
+          "Your browser does not support the audio tag.",
+        );
+      });
+    });
+
+    test("audio with various formats", () => {
+      // Note: webm is excluded here as it's also a video format and video check comes first
+      const formats = ["mp3", "wav", "ogg", "m4a", "flac", "3gp"];
+
+      formats.forEach((format) => {
+        const ast = fromMarkdown(`![[audio.${format}]]`, {
+          extensions: [syntax()],
+          mdastExtensions: [wikiLinkFromMarkdown()],
+        });
+
+        visit(ast, "embed", (node) => {
+          expect(node.data.hName).toBe("audio");
+          expect(node.data.hProperties?.controls).toBe(true);
+        });
+      });
+    });
+
+    test("video with various formats", () => {
+      const formats = ["mp4", "webm", "ogv", "mov", "mkv"];
+
+      formats.forEach((format) => {
+        const ast = fromMarkdown(`![[video.${format}]]`, {
+          extensions: [syntax()],
+          mdastExtensions: [wikiLinkFromMarkdown()],
+        });
+
+        visit(ast, "embed", (node) => {
+          expect(node.data.hName).toBe("video");
+          expect(node.data.hProperties?.controls).toBe(true);
+        });
+      });
+    });
   });
 
   //   describe("configuration options", () => {
