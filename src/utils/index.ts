@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 
 // File type definitions
-export type MarkdownFile = `.md`;
+export type MarkdownFile = `.md` | `.mdx`;
 
 export type ImageFile =
   | `avif`
@@ -15,7 +15,7 @@ export type ImageFile =
   | `svg`
   | `webp`;
 
-export type AudioFile = `flac` | `m4a` | `mp3` | `ogg` | `wav` | `webm` | `3gp`;
+export type AudioFile = `flac` | `m4a` | `mp3` | `ogg` | `wav` | `3gp`;
 
 export type VideoFile = `mkv` | `mov` | `mp4` | `ogv` | `webm`;
 
@@ -29,7 +29,7 @@ export type SupportedFileType =
   | PdfFile;
 
 export function isMarkdownFile(extension: string): extension is MarkdownFile {
-  return extension === "md" || extension === "";
+  return extension === "md" || extension === "mdx" || extension === "";
 }
 
 export function isImageFile(extension: string): extension is ImageFile {
@@ -39,9 +39,7 @@ export function isImageFile(extension: string): extension is ImageFile {
 }
 
 export function isAudioFile(extension: string): extension is AudioFile {
-  return ["flac", "m4a", "mp3", "ogg", "wav", "webm", "3gp"].includes(
-    extension,
-  );
+  return ["flac", "m4a", "mp3", "ogg", "wav", "3gp"].includes(extension);
 }
 
 export function isVideoFile(extension: string): extension is VideoFile {

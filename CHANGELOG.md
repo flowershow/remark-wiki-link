@@ -1,5 +1,18 @@
 # remark-wiki-link
 
+## 3.1.2
+
+### Patch Changes
+
+- Remove webm from audio file type detection
+
+  WebM is a container format that can contain both audio and video streams. Since there's no way to determine from the file extension alone whether a `.webm` file contains audio or video content, and WebM is more commonly used for video, it has been removed from the audio file type list.
+
+  **Impact:**
+  - `![[file.webm]]` will now always render as a `<video>` tag
+  - The `<video>` tag can still play audio-only WebM files correctly
+  - For explicit audio-only WebM files, users should use dedicated audio formats like `.mp3`, `.ogg`, or `.wav`
+
 ## 3.1.1
 
 ### Patch Changes
