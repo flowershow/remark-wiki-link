@@ -115,14 +115,24 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
         if (match) {
           wikiLink.data.alias = undefined;
         }
-        wikiLink.data.hName = "img";
-        wikiLink.data.hProperties = {
+        
+        const hProperties: any = {
           src: url,
           alt: name,
           className: classNames,
           width: width ?? undefined,
           height: height ?? undefined,
         };
+        
+        // Add inline styles for better rendering control
+        if (width) {
+          const styleWidth = `width: ${width}px`;
+          const styleHeight = height ? `; height: ${height}px` : "";
+          hProperties.style = `${styleWidth}${styleHeight}`;
+        }
+        
+        wikiLink.data.hName = "img";
+        wikiLink.data.hProperties = hProperties;
       } else if (isPdfFile(extension)) {
         wikiLink.data.hName = "iframe";
         wikiLink.data.hProperties = {
@@ -136,14 +146,24 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
         if (match) {
           wikiLink.data.alias = undefined;
         }
-        wikiLink.data.hName = "video";
-        wikiLink.data.hProperties = {
+        
+        const hProperties: any = {
           src: url,
           className: classNames,
           controls: true,
           width: width ?? undefined,
           height: height ?? undefined,
         };
+        
+        // Add inline styles for better rendering control
+        if (width) {
+          const styleWidth = `width: ${width}px`;
+          const styleHeight = height ? `; height: ${height}px` : "";
+          hProperties.style = `${styleWidth}${styleHeight}`;
+        }
+        
+        wikiLink.data.hName = "video";
+        wikiLink.data.hProperties = hProperties;
         wikiLink.data.hChildren = [
           { type: "text", value: "Your browser does not support the video tag." },
         ];

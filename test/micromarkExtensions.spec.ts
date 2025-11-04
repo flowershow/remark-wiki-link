@@ -188,7 +188,7 @@ describe("micromark-extension-wiki-link", () => {
         htmlExtensions: [html({ files: ["My Image.jpg"] })],
       });
       expect(serialized).toBe(
-        '<p><img src="My Image.jpg" alt="My Image" class="internal" width="200" /></p>',
+        '<p><img src="My Image.jpg" alt="My Image" class="internal" width="200" style="width: 200px" /></p>',
       );
     });
 
@@ -198,7 +198,7 @@ describe("micromark-extension-wiki-link", () => {
         htmlExtensions: [html({ files: ["My Image.jpg"] })],
       });
       expect(serialized).toBe(
-        '<p><img src="My Image.jpg" alt="My Image" class="internal" width="200" height="300" /></p>',
+        '<p><img src="My Image.jpg" alt="My Image" class="internal" width="200" height="300" style="width: 200px; height: 300px" /></p>',
       );
     });
 
@@ -228,7 +228,7 @@ describe("micromark-extension-wiki-link", () => {
         htmlExtensions: [html()],
       });
       expect(serialized).toBe(
-        '<p><video src="My Video.mp4" class="internal new" controls width="640" height="480">Your browser does not support the video tag.</video></p>',
+        '<p><video src="My Video.mp4" class="internal new" controls width="640" height="480" style="width: 640px; height: 480px">Your browser does not support the video tag.</video></p>',
       );
     });
 
@@ -238,7 +238,7 @@ describe("micromark-extension-wiki-link", () => {
         htmlExtensions: [html()],
       });
       expect(serialized).toBe(
-        '<p><video src="My Video.mp4" class="internal new" controls width="640">Your browser does not support the video tag.</video></p>',
+        '<p><video src="My Video.mp4" class="internal new" controls width="640" style="width: 640px">Your browser does not support the video tag.</video></p>',
       );
     });
 

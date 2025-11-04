@@ -108,6 +108,10 @@ function html(opts: Options = {}): HtmlExtension {
           if (height) {
             imgAttributes += ` height="${height}"`;
           }
+          // Add inline styles for better rendering control
+          const styleWidth = `width: ${width}px`;
+          const styleHeight = height ? `; height: ${height}px` : "";
+          imgAttributes += ` style="${styleWidth}${styleHeight}"`;
         }
 
         this.tag(`<img ${imgAttributes} />`);
@@ -130,6 +134,10 @@ function html(opts: Options = {}): HtmlExtension {
           if (height) {
             videoAttributes += ` height="${height}"`;
           }
+          // Add inline styles for better rendering control
+          const styleWidth = `width: ${width}px`;
+          const styleHeight = height ? `; height: ${height}px` : "";
+          videoAttributes += ` style="${styleWidth}${styleHeight}"`;
         }
 
         this.tag(`<video ${videoAttributes}>`);

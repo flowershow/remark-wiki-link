@@ -262,6 +262,7 @@ describe("mdast-util-wiki-link", () => {
         expect(node.data.hProperties?.width).toBe("200");
         expect(node.data.hProperties?.height).toBe("300");
         expect(node.data.hProperties?.alt).toBe("My Image");
+        expect(node.data.hProperties?.style).toBe("width: 200px; height: 300px");
       });
     });
 
@@ -322,6 +323,7 @@ describe("mdast-util-wiki-link", () => {
         expect(node.data.hProperties?.controls).toBe(true);
         expect(node.data.hProperties?.width).toBe("640");
         expect(node.data.hProperties?.height).toBe("480");
+        expect(node.data.hProperties?.style).toBe("width: 640px; height: 480px");
         expect(node.data.hChildren?.[0].value).toBe(
           "Your browser does not support the video tag.",
         );
@@ -346,6 +348,7 @@ describe("mdast-util-wiki-link", () => {
         expect(node.data.hProperties?.width).toBe("640");
         // Height should be undefined to maintain aspect ratio
         expect(node.data.hProperties?.height).toBe(undefined);
+        expect(node.data.hProperties?.style).toBe("width: 640px");
       });
     });
 

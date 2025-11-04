@@ -1,5 +1,17 @@
 # remark-wiki-link
 
+## 3.1.1
+
+### Patch Changes
+
+- Add inline styles for width and height dimensions on images and videos
+
+  When dimensions are specified for images or videos using the wiki-link syntax, inline styles are now automatically added alongside the width/height attributes for better rendering control across different contexts.
+
+  **Examples:**
+  - `![[image.jpg|200x300]]` now generates `style="width: 200px; height: 300px"`
+  - `![[video.mp4|640]]` now generates `style="width: 640px"` (height omitted to maintain aspect ratio)
+
 ## 3.1.0
 
 ### Minor Changes
