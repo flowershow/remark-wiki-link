@@ -92,6 +92,78 @@ describe("findMatchingFilePath", () => {
         }),
       ).toBeUndefined();
     });
+
+    describe("case-insensitive matching", () => {
+      const files = [
+        "/Blog/README.md",
+        "/Blog/About.mdx",
+        "/Blog/Guide/Post.mdx",
+        "/BLOG/post.md",
+        "/README.mdx",
+        "/About.md",
+        "/Docs/README.md",
+      ];
+
+      test("finds match with different case in regular format", () => {
+        expect(
+          findMatchingFilePath({
+            path: "/about",
+            files,
+            format: "regular",
+            caseInsensitive: true,
+          }),
+        ).toBe("/About.md");
+      });
+
+      test("finds match with different case in shortestPossible format", () => {
+        expect(
+          findMatchingFilePath({
+            path: "readme",
+            files,
+            caseInsensitive: true,
+          }),
+        ).toBe("/README.mdx");
+      });
+
+      test("finds match with mixed case path", () => {
+        expect(
+          findMatchingFilePath({
+            path: "guide/POST",
+            files,
+            caseInsensitive: true,
+          }),
+        ).toBe("/Blog/Guide/Post.mdx");
+      });
+
+      test("case-sensitive matching when disabled", () => {
+        expect(
+          findMatchingFilePath({
+            path: "readme",
+            files,
+            caseInsensitive: false,
+          }),
+        ).toBeUndefined();
+      });
+
+      test("case-sensitive exact match when disabled", () => {
+        expect(
+          findMatchingFilePath({
+            path: "README",
+            files,
+            caseInsensitive: false,
+          }),
+        ).toBe("/README.mdx");
+      });
+
+      test("defaults to case-insensitive when not specified", () => {
+        expect(
+          findMatchingFilePath({
+            path: "about",
+            files,
+          }),
+        ).toBe("/About.md");
+      });
+    });
   });
 });
 
@@ -139,7 +211,10 @@ describe("defaultUrlResolver", () => {
 
     test("file path and heading", () => {
       expect(
-        defaultUrlResolver({ filePath: "/blog/post.md", heading: "Some heading" }),
+        defaultUrlResolver({
+          filePath: "/blog/post.md",
+          heading: "Some heading",
+        }),
       ).toBe(`/blog/post#${slug("Some heading")}`);
     });
   });

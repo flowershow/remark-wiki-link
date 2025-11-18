@@ -16,6 +16,7 @@ import { WIKI_LINK_TARGET_PATTERN } from "../utils/const";
 function html(opts: Options = {}): HtmlExtension {
   const format = opts.format || "shortestPossible";
   const files = opts.files || [];
+  const caseInsensitive = opts.caseInsensitive ?? true;
   const className = opts.className || "internal";
   const newClassName = opts.newClassName || "new";
   const urlResolver = opts.urlResolver || defaultUrlResolver;
@@ -63,6 +64,7 @@ function html(opts: Options = {}): HtmlExtension {
       path: targetPath,
       files,
       format,
+      caseInsensitive,
     });
 
     const existing = Boolean(
@@ -127,7 +129,7 @@ function html(opts: Options = {}): HtmlExtension {
 
       if (isVideoFile(extension)) {
         let videoAttributes = `src="${url}" class="${classNames}" controls`;
-        
+
         const [, width, height] = alias?.match(/^(\d+)(?:x(\d+))?$/) ?? [];
         if (width) {
           videoAttributes += ` width="${width}"`;

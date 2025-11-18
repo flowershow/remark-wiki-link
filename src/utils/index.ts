@@ -94,26 +94,32 @@ export const findMatchingFilePath = ({
   path,
   files,
   format,
+  caseInsensitive = true,
 }: {
   path: string; // wiki-link target (e.g. some/file in [[some/file#Some heading|Alias]])
   files: string[]; // file paths with  (with or without extensions)
   format?: "regular" | "shortestPossible";
+  caseInsensitive?: boolean; // whether to match case-insensitively (default: true)
 }): string | undefined => {
   if (path.length === 0) {
     return undefined;
   }
 
+  const normalizedPath = caseInsensitive ? path.toLowerCase() : path;
+
   if (format === "regular") {
     return files.find((file) => {
       const fileWithoutExt = file.replace(/\.(mdx?|md)$/, "");
-      return fileWithoutExt === path;
+      const normalizedFile = caseInsensitive ? fileWithoutExt.toLowerCase() : fileWithoutExt;
+      return normalizedFile === normalizedPath;
     });
   }
 
   // Find all files that end with the path (without extension for markdown files)
   const matchingFiles = files.filter((file) => {
     const fileWithoutExt = file.replace(/\.(mdx?|md)$/, "");
-    return fileWithoutExt.endsWith(path);
+    const normalizedFile = caseInsensitive ? fileWithoutExt.toLowerCase() : fileWithoutExt;
+    return normalizedFile.endsWith(normalizedPath);
   });
 
   if (matchingFiles.length === 0) {

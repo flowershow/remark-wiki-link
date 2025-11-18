@@ -10,6 +10,7 @@ export interface Options {
     | "regular" // link paths will be treated as is (absolute or relative, depending on how they are written)
     | "shortestPossible"; // (default) link paths will be treated as "shortest-possible" absolute paths (e.g. "[[abc]]" would be matched to blog/abc file if provided in files array)
   files?: string[]; // list of file paths used to match wikilinks
+  caseInsensitive?: boolean; // (default: true) whether to match file paths case-insensitively
   className?: string; // class to be added to all wikilinks (and embeds)
   newClassName?: string; // class to added to wikilink (and embeds) that don't have matching files
   urlResolver?: (opts: {

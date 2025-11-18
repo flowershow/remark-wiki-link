@@ -363,5 +363,45 @@ describe("micromark-extension-wiki-link", () => {
         '<p><a href="/blog/post" class="internal">post</a></p>',
       );
     });
+
+    test("case-insensitive matching by default", () => {
+      const serialized = micromark("[[wiki link]]", "ascii", {
+        extensions: [syntax()],
+        htmlExtensions: [html({ files: ["Wiki Link.md"] })],
+      });
+      expect(serialized).toBe(
+        '<p><a href="Wiki Link" class="internal">wiki link</a></p>',
+      );
+    });
+
+    test("case-insensitive matching when explicitly enabled", () => {
+      const serialized = micromark("[[BLOG/POST]]", "ascii", {
+        extensions: [syntax()],
+        htmlExtensions: [
+          html({
+            files: ["/blog/post.md"],
+            caseInsensitive: true,
+          }),
+        ],
+      });
+      expect(serialized).toBe(
+        '<p><a href="/blog/post" class="internal">BLOG/POST</a></p>',
+      );
+    });
+
+    test("case-sensitive matching when disabled", () => {
+      const serialized = micromark("[[wiki link]]", "ascii", {
+        extensions: [syntax()],
+        htmlExtensions: [
+          html({
+            files: ["Wiki Link.md"],
+            caseInsensitive: false,
+          }),
+        ],
+      });
+      expect(serialized).toBe(
+        '<p><a href="wiki link" class="internal new">wiki link</a></p>',
+      );
+    });
   });
 });

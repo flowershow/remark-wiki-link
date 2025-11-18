@@ -1,5 +1,27 @@
 # remark-wiki-link
 
+## 3.2.0
+
+### Minor Changes
+
+- Add support for case-insensitive wiki-link resolution (enabled by default for Obsidian parity).
+
+  ## New Features
+  - Added `caseInsensitive` option to the plugin configuration (defaults to `true`)
+  - Wiki-links now match files regardless of case by default (e.g., `[[wiki link]]` will match `Wiki Link.md`)
+  - This behavior matches Obsidian's default wiki-link resolution
+
+  ## Configuration
+
+  To disable case-insensitive matching and require exact case matches:
+
+  ```javascript
+  .use(wikiLinkPlugin, {
+    files: ["Wiki Link.md"],
+    caseInsensitive: false, // Require exact case match
+  })
+  ```
+
 ## 3.1.2
 
 ### Patch Changes

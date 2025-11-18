@@ -18,6 +18,7 @@ import { WIKI_LINK_TARGET_PATTERN } from "../utils/const";
 function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
   const format = opts.format || "shortestPossible";
   const files = opts.files || [];
+  const caseInsensitive = opts.caseInsensitive ?? true;
   const className = opts.className || "internal";
   const newClassName = opts.newClassName || "new";
   const urlResolver = opts.urlResolver || defaultUrlResolver;
@@ -68,6 +69,7 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
       path: targetPath,
       files,
       format,
+      caseInsensitive,
     });
 
     const existing = Boolean(

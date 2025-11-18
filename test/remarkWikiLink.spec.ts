@@ -88,6 +88,62 @@ describe("remark-wiki-link", () => {
       });
     });
 
+    test("matches files case-insensitively by default", () => {
+      const processor = unified()
+        .use(markdown)
+        .use(wikiLinkPlugin, {
+          files: ["Wiki Link.md"],
+        });
+
+      let ast = processor.parse("[[wiki link]]");
+
+      expect(select("wikiLink", ast)).not.toEqual(null);
+
+      visit(ast, "wikiLink", (node) => {
+        expect(node.value).toBe("wiki link");
+        expect(node.data.existing).toBe(true);
+        expect(node.data.hProperties?.className).toBe("internal");
+      });
+    });
+
+    test("matches files case-insensitively when explicitly enabled", () => {
+      const processor = unified()
+        .use(markdown)
+        .use(wikiLinkPlugin, {
+          files: ["/Blog/Post.md", "/About.mdx"],
+          caseInsensitive: true,
+        });
+
+      let ast = processor.parse("[[blog/post]]");
+
+      expect(select("wikiLink", ast)).not.toEqual(null);
+
+      visit(ast, "wikiLink", (node) => {
+        expect(node.value).toBe("blog/post");
+        expect(node.data.existing).toBe(true);
+        expect(node.data.path).toBe("/Blog/Post");
+      });
+    });
+
+    test("does not match files with different case when case-sensitive", () => {
+      const processor = unified()
+        .use(markdown)
+        .use(wikiLinkPlugin, {
+          files: ["Wiki Link.md"],
+          caseInsensitive: false,
+        });
+
+      let ast = processor.parse("[[wiki link]]");
+
+      expect(select("wikiLink", ast)).not.toEqual(null);
+
+      visit(ast, "wikiLink", (node) => {
+        expect(node.value).toBe("wiki link");
+        expect(node.data.existing).toBe(false);
+        expect(node.data.hProperties?.className).toBe("internal new");
+      });
+    });
+
     describe("Parses an embed", () => {
       test("image", () => {
         const processor = unified().use(markdown).use(wikiLinkPlugin);
