@@ -110,7 +110,9 @@ export const findMatchingFilePath = ({
   if (format === "regular") {
     return files.find((file) => {
       const fileWithoutExt = file.replace(/\.(mdx?|md)$/, "");
-      const normalizedFile = caseInsensitive ? fileWithoutExt.toLowerCase() : fileWithoutExt;
+      const normalizedFile = caseInsensitive
+        ? fileWithoutExt.toLowerCase()
+        : fileWithoutExt;
       return normalizedFile === normalizedPath;
     });
   }
@@ -118,7 +120,9 @@ export const findMatchingFilePath = ({
   // Find all files that end with the path (without extension for markdown files)
   const matchingFiles = files.filter((file) => {
     const fileWithoutExt = file.replace(/\.(mdx?|md)$/, "");
-    const normalizedFile = caseInsensitive ? fileWithoutExt.toLowerCase() : fileWithoutExt;
+    const normalizedFile = caseInsensitive
+      ? fileWithoutExt.toLowerCase()
+      : fileWithoutExt;
     return normalizedFile.endsWith(normalizedPath);
   });
 
