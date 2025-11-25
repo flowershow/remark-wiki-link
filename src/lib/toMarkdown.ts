@@ -41,10 +41,24 @@ function toMarkdown(opts: ToMarkdownOptions = {}): ToMarkdownExtension {
     return value;
   };
 
+  const embedHandler: ToMarkdownHandle = (node, parent, state) => {
+    const exit = state.enter('embed');
+
+    const nodeValue = state.safe(node.value, { before: '[', after: ']' });
+    const nodeAlias = state.safe(node.data.alias, { before: '[', after: ']' });
+
+    const value = nodeAlias !== nodeValue ? `![[${nodeValue}${aliasDivider}${nodeAlias}]]` : `![[${nodeValue}]]`;
+
+    exit()
+
+    return value
+  }
+
   return {
     unsafe,
     handlers: {
       wikiLink: handler,
+      embed: embedHandler
     },
   };
 }
