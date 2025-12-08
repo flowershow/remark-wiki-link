@@ -1,5 +1,12 @@
 # remark-wiki-link
 
+## 3.3.1
+
+### Patch Changes
+
+- - Fix embed dimensions being stripped during markdown serialization. When converting embeds with dimensions (e.g., `![[image.jpg|200x300]]`) back to markdown, the dimensions (or simple alias) are now properly preserved in the output.
+  - Fix trailing colons being added to wiki links without aliases, when converting wiki links back to markdown (#21).
+
 ## 3.3.0
 
 ### Minor Changes
