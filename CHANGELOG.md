@@ -1,5 +1,12 @@
 # remark-wiki-link
 
+## 3.3.2
+
+### Patch Changes
+
+- 97b14f9: - Fix embeds serialization.
+  - Fix trailing colons being added to wiki links at serialization (#21).
+
 ## 3.3.1
 
 ### Patch Changes
