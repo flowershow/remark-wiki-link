@@ -10,7 +10,7 @@ interface ToMarkdownOptions {
 }
 
 function toMarkdown(opts: ToMarkdownOptions = {}): ToMarkdownExtension {
-  const aliasDivider = opts.aliasDivider || ":";
+  const aliasDivider = opts.aliasDivider ?? "|";
 
   const unsafe: Unsafe[] = [
     {
@@ -27,7 +27,9 @@ function toMarkdown(opts: ToMarkdownOptions = {}): ToMarkdownExtension {
     const exit = state.enter("wikiLink");
 
     const nodeValue = state.safe(node.value, { before: "[", after: "]" });
-    const nodeAlias = state.safe(node.data.alias, { before: "[", after: "]" });
+    const nodeAlias = node.data.alias
+      ? state.safe(node.data.alias, { before: "[", after: "]" })
+      : nodeValue;
 
     let value;
     if (nodeAlias !== nodeValue) {
@@ -42,23 +44,37 @@ function toMarkdown(opts: ToMarkdownOptions = {}): ToMarkdownExtension {
   };
 
   const embedHandler: ToMarkdownHandle = (node, parent, state) => {
-    const exit = state.enter('embed');
+    const exit = state.enter("embed");
 
-    const nodeValue = state.safe(node.value, { before: '[', after: ']' });
-    const nodeAlias = state.safe(node.data.alias, { before: '[', after: ']' });
+    const nodeValue = state.safe(node.value, { before: "[", after: "]" });
+    
+    // Check if there are dimensions (width/height) in hProperties
+    const width = node.data.hProperties?.width;
+    const height = node.data.hProperties?.height;
+    
+    let aliasOrDimensions = "";
+    if (width || height) {
+      // Reconstruct dimensions string
+      aliasOrDimensions = width && height ? `${width}x${height}` : width || "";
+    } else if (node.data.alias) {
+      // Use regular alias if no dimensions
+      aliasOrDimensions = state.safe(node.data.alias, { before: "[", after: "]" });
+    }
 
-    const value = nodeAlias !== nodeValue ? `![[${nodeValue}${aliasDivider}${nodeAlias}]]` : `![[${nodeValue}]]`;
+    const value = aliasOrDimensions
+      ? `![[${nodeValue}${aliasDivider}${aliasOrDimensions}]]`
+      : `![[${nodeValue}]]`;
 
-    exit()
+    exit();
 
-    return value
-  }
+    return value;
+  };
 
   return {
     unsafe,
     handlers: {
       wikiLink: handler,
-      embed: embedHandler
+      embed: embedHandler,
     },
   };
 }

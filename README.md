@@ -51,7 +51,6 @@ Controls how wiki link targets are matched against files:
 
 - **`"regular"`**: Exact path matching. The wiki link target must match the file path exactly (excluding extension).
   - Example: `[[blog/my-post]]` will only match `blog/my-post.md`
-  
 - **`"shortestPossible"`**: Obsidian-style matching. The wiki link target is matched against the end of file paths, and the shortest matching path is used.
   - Example: `[[my-post]]` can match both `blog/my-post.md` and `docs/my-post.md`, but will resolve to whichever has the shorter path
   - This allows you to use short wiki links like `[[my-post]]` instead of full paths like `[[blog/my-post]]`
@@ -118,7 +117,9 @@ A function that resolves a wikilink (or embed) target to a URL path. The target 
 Type: `string`
 Default: `"|"`
 
-The character used to separate the link target from its alias in wiki links. For example in `[[target|alias]]`, the divider is `|`.
+The character used to separate the link target from its alias in wiki links during both parsing and stringification. For example, in `[[target|alias]]`, the divider is `|`.
+
+This option allows you to use different wiki link syntaxes. For instance, you can use `:` as a divider by setting `aliasDivider: ":"`, which would parse and stringify links as `[[target:alias]]`.
 
 ## Generating list of files
 

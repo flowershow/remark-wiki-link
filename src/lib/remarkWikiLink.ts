@@ -14,6 +14,7 @@ export interface Options {
   caseInsensitive?: boolean; // (default: true) whether to match file paths case-insensitively
   className?: string; // class to be added to all wikilinks (and embeds)
   newClassName?: string; // class to added to wikilink (and embeds) that don't have matching files
+  aliasDivider?: string; // (default: "|") character used to separate the target from the alias in wiki links during parsing and stringification
   urlResolver?: (opts: {
     filePath: string;
     isEmbed: boolean;
