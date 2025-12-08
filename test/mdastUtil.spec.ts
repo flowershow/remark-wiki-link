@@ -1,20 +1,12 @@
 import { visit } from "unist-util-visit";
-import { Node, Data } from "unist";
 import { syntax } from "../src/lib/syntax";
 import { fromMarkdown } from "mdast-util-from-markdown";
 import { toMarkdown } from "mdast-util-to-markdown";
 import { fromMarkdown as wikiLinkFromMarkdown } from "../src/lib/fromMarkdown";
 import { toMarkdown as wikiLinkToMarkdown } from "../src/lib/toMarkdown";
-import { WikiLink } from "mdast";
-
-// function assertWikiLink(obj: Node): asserts obj is WikiLink {
-//   if (obj.type !== "wikiLink" && obj.type !== "wikiEmbed") {
-//     throw new Error("Not a wiki link or embed");
-//   }
-// }
 
 describe("mdast-util-wiki-link", () => {
-  describe("(fromMarkdown) Parses a wikilink", () => {
+  describe("fromMarkdown - Parses a wikilink", () => {
     test("that has a matching file", () => {
       const ast = fromMarkdown("[[Wiki Link]]", {
         extensions: [syntax()],
@@ -226,7 +218,7 @@ describe("mdast-util-wiki-link", () => {
     });
   });
 
-  describe("Parses an embed", () => {
+  describe("fromMarkdown - Parses an embed", () => {
     test("image", () => {
       const ast = fromMarkdown("![[My Image.jpg]]", {
         extensions: [syntax()],
@@ -410,7 +402,7 @@ describe("mdast-util-wiki-link", () => {
     });
   });
 
-  describe("Permalinks", () => {
+  describe("fromMarkdown - Permalinks", () => {
     test("uses permalink when file matches and permalink is provided", () => {
       const ast = fromMarkdown("[[blog/my-post]]", {
         extensions: [syntax()],
@@ -521,101 +513,209 @@ describe("mdast-util-wiki-link", () => {
     });
   });
 
-  //   describe("configuration options", () => {
-  //     test("uses pathTransformer", () => {
-  //       const kebab = (name: string) => name.replace(" ", "_").toLowerCase()
+  describe("fromMarkdown - Custom alias divider", () => {
+    test("parses wiki link with custom divider", () => {
+      const ast = fromMarkdown("[[Wiki Link:Alias]]", {
+        extensions: [syntax({ aliasDivider: ":" })],
+        mdastExtensions: [
+          wikiLinkFromMarkdown({
+            files: [],
+          }),
+        ],
+      });
 
-  //       const ast = fromMarkdown("[[A Page]]", {
-  //         extensions: [syntax()],
-  //         mdastExtensions: [
-  //           wikiLinkFromMarkdown({
-  //             pathTransformer: kebab,
-  //             permalinks: ["a-page"],
-  //           }),
-  //         ],
-  //       });
+      visit(ast, "wikiLink", (node) => {
+        expect(node.value).toBe("Wiki Link");
+        expect(node.data.alias).toBe("Alias");
+        expect(node.data.hChildren?.[0].value).toBe("Alias");
+      });
+    });
 
-  //       visit(ast, "wikiLink", (node: Node) => {
-  //         expect(node.data.existing).toBe(true);
-  //         expect(node.data.path).toBe("a-page");
-  //         expect(node.data.hProperties?.href).toBe("a-page");
-  //       });
-  //     });
+    test("parses embed with colon divider", () => {
+      const ast = fromMarkdown("![[image.jpg:Alt Text]]", {
+        extensions: [syntax({ aliasDivider: ":" })],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
 
-  //     test("uses newClassName", () => {
-  //       const ast = fromMarkdown("[[A Page]]", {
-  //         extensions: [syntax()],
-  //         mdastExtensions: [
-  //           wikiLinkFromMarkdown({
-  //             permalinks: [],
-  //             newClassName: "new_page",
-  //           }),
-  //         ],
-  //       });
+      visit(ast, "embed", (node) => {
+        expect(node.value).toBe("image.jpg");
+        expect(node.data.alias).toBe("Alt Text");
+      });
+    });
 
-  //       visit(ast, "wikiLink", (node: Node) => {
-  //         expect(node.data.hProperties?.className).toBe("internal new_page");
-  //       });
-  //     });
+    test("round-trip with custom divider maintains consistency", () => {
+      const original = "[[Page:Alias]]";
+      const ast = fromMarkdown(original, {
+        extensions: [syntax({ aliasDivider: ":" })],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
 
-  //     test("uses className", () => {
-  //       const ast = fromMarkdown("[[A Page]]", {
-  //         extensions: [syntax()],
-  //         mdastExtensions: [
-  //           wikiLinkFromMarkdown({
-  //             className: "wiki_link",
-  //             permalinks: [],
-  //           }),
-  //         ],
-  //       });
+      const stringified = toMarkdown(ast, {
+        extensions: [wikiLinkToMarkdown({ aliasDivider: ":" })],
+      }).trim();
 
-  //       visit(ast, "wikiLink", (node: Node) => {
-  //         expect(node.data.hProperties?.className).toBe("wiki_link");
-  //       });
-  //     });
-  //   });
-  // });
+      expect(stringified).toBe(original);
+    });
 
-  // describe("toMarkdown", () => {
-  //   test("stringifies wiki links", () => {
-  //     const ast = fromMarkdown("[[Wiki Link]]", {
-  //       extensions: [syntax()],
-  //       mdastExtensions: [wikiLink.fromMarkdown()],
-  //     });
+    test("converts between different dividers during round-trip", () => {
+      const original = "[[Page|Alias]]";
+      const ast = fromMarkdown(original, {
+        extensions: [syntax({ aliasDivider: "|" })],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
 
-  //     const stringified = toMarkdown(ast, {
-  //       extensions: [wikiLink.toMarkdown()],
-  //     }).trim();
+      const stringified = toMarkdown(ast, {
+        extensions: [wikiLinkToMarkdown({ aliasDivider: "->" })],
+      }).trim();
 
-  //     assert.equal(stringified, "[[Wiki Link]]");
-  //   });
+      expect(stringified).toBe("[[Page->Alias]]");
+    });
+  });
 
-  //   test("stringifies aliased wiki links", () => {
-  //     const ast = fromMarkdown("[[Real Page:Page Alias]]", {
-  //       extensions: [syntax()],
-  //       mdastExtensions: [wikiLink.fromMarkdown()],
-  //     });
+  describe("toMarkdown - wikiLink handler", () => {
+    test("stringifies a simple wiki link", () => {
+      const ast = fromMarkdown("[[Wiki Link]]", {
+        extensions: [syntax()],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
 
-  //     const stringified = toMarkdown(ast, {
-  //       extensions: [wikiLink.toMarkdown()],
-  //     }).trim();
+      const stringified = toMarkdown(ast, {
+        extensions: [wikiLinkToMarkdown()],
+      }).trim();
 
-  //     assert.equal(stringified, "[[Real Page:Page Alias]]");
-  //   });
+      expect(stringified).toBe("[[Wiki Link]]");
+    });
 
-  //   describe("configuration options", () => {
-  //     test("uses aliasDivider", () => {
-  //       const ast = fromMarkdown("[[Real Page:Page Alias]]", {
-  //         extensions: [syntax()],
-  //         mdastExtensions: [wikiLink.fromMarkdown()],
-  //       });
+    test("stringifies a wiki link with alias using default divider", () => {
+      const ast = fromMarkdown("[[Real Page|Page Alias]]", {
+        extensions: [syntax()],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
 
-  //       const stringified = toMarkdown(ast, {
-  //         extensions: [wikiLink.toMarkdown({ aliasDivider: "|" })],
-  //       }).trim();
+      const stringified = toMarkdown(ast, {
+        extensions: [wikiLinkToMarkdown()],
+      }).trim();
 
-  //       assert.equal(stringified, "[[Real Page|Page Alias]]");
-  //     });
-  //   });
-  // });
+      expect(stringified).toBe("[[Real Page|Page Alias]]");
+    });
+
+    test("stringifies a wiki link with alias using custom divider", () => {
+      const ast = fromMarkdown("[[Real Page:Page Alias]]", {
+        extensions: [syntax({ aliasDivider: ":" })],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
+
+      const stringified = toMarkdown(ast, {
+        extensions: [wikiLinkToMarkdown({ aliasDivider: ":" })],
+      }).trim();
+
+      expect(stringified).toBe("[[Real Page:Page Alias]]");
+    });
+
+    test("stringifies a wiki link with heading", () => {
+      const ast = fromMarkdown("[[Wiki Link#Some Heading]]", {
+        extensions: [syntax()],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
+
+      const stringified = toMarkdown(ast, {
+        extensions: [wikiLinkToMarkdown()],
+      }).trim();
+
+      expect(stringified).toBe("[[Wiki Link#Some Heading]]");
+    });
+
+    test("stringifies a wiki link with heading and alias", () => {
+      const ast = fromMarkdown("[[Wiki Link#Some Heading|Alias]]", {
+        extensions: [syntax()],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
+
+      const stringified = toMarkdown(ast, {
+        extensions: [wikiLinkToMarkdown()],
+      }).trim();
+
+      expect(stringified).toBe("[[Wiki Link#Some Heading|Alias]]");
+    });
+
+    test("stringifies a wiki link to a heading on the same page", () => {
+      const ast = fromMarkdown("[[#Some Heading]]", {
+        extensions: [syntax()],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
+
+      const stringified = toMarkdown(ast, {
+        extensions: [wikiLinkToMarkdown()],
+      }).trim();
+
+      expect(stringified).toBe("[[#Some Heading]]");
+    });
+
+    test("stringifies a wiki link with path", () => {
+      const ast = fromMarkdown("[[folder/subfolder/Page]]", {
+        extensions: [syntax()],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
+
+      const stringified = toMarkdown(ast, {
+        extensions: [wikiLinkToMarkdown()],
+      }).trim();
+
+      expect(stringified).toBe("[[folder/subfolder/Page]]");
+    });
+  });
+
+  describe("toMarkdown - embed handler", () => {
+    test("stringifies a simple embed", () => {
+      const ast = fromMarkdown("![[My Image.jpg]]", {
+        extensions: [syntax()],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
+
+      const stringified = toMarkdown(ast, {
+        extensions: [wikiLinkToMarkdown()],
+      }).trim();
+
+      expect(stringified).toBe("![[My Image.jpg]]");
+    });
+
+    test("stringifies an embed with alias using default divider", () => {
+      const ast = fromMarkdown("![[My Image.jpg|Alt Text]]", {
+        extensions: [syntax()],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
+
+      const stringified = toMarkdown(ast, {
+        extensions: [wikiLinkToMarkdown()],
+      }).trim();
+
+      expect(stringified).toBe("![[My Image.jpg|Alt Text]]");
+    });
+
+    test("stringifies an embed with alias using custom divider", () => {
+      const ast = fromMarkdown("![[My Image.jpg:Alt Text]]", {
+        extensions: [syntax({ aliasDivider: ":" })],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
+
+      const stringified = toMarkdown(ast, {
+        extensions: [wikiLinkToMarkdown({ aliasDivider: ":" })],
+      }).trim();
+
+      expect(stringified).toBe("![[My Image.jpg:Alt Text]]");
+    });
+
+    test("stringifies an embed with dimensions", () => {
+      const ast = fromMarkdown("![[My Image.jpg|200x300]]", {
+        extensions: [syntax()],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
+
+      const stringified = toMarkdown(ast, {
+        extensions: [wikiLinkToMarkdown()],
+      }).trim();
+
+      expect(stringified).toBe("![[My Image.jpg|200x300]]");
+    });
+  });
 });
