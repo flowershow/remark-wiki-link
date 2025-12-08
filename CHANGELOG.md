@@ -1,5 +1,12 @@
 # remark-wiki-link
 
+## 3.3.1
+
+### Patch Changes
+
+- - Fix embeds serialization (`toMarkdown`).
+  - Fix trailing colons being added to wiki links without aliases at serialization (`toMarkdown`) (#21).
+
 ## 3.3.0
 
 ### Minor Changes
