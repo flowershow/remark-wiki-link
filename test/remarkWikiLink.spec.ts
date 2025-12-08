@@ -278,5 +278,121 @@ describe("remark-wiki-link", () => {
         });
       });
     });
+
+    describe("Permalinks", () => {
+      test("uses permalink when file matches and permalink is provided", () => {
+        const processor = unified()
+          .use(markdown)
+          .use(wikiLinkPlugin, {
+            files: ["blog/my-post.md"],
+            permalinks: {
+              "blog/my-post.md": "/custom-url",
+            },
+          });
+
+        let ast = processor.parse("[[blog/my-post]]");
+
+        expect(select("wikiLink", ast)).not.toEqual(null);
+
+        visit(ast, "wikiLink", (node) => {
+          expect(node.value).toBe("blog/my-post");
+          expect(node.data.path).toBe("/custom-url");
+          expect(node.data.existing).toBe(true);
+          expect(node.data.hProperties?.href).toBe("/custom-url");
+          expect(node.data.hProperties?.className).toBe("internal");
+        });
+      });
+
+      test("uses permalink with heading when provided", () => {
+        const processor = unified()
+          .use(markdown)
+          .use(wikiLinkPlugin, {
+            files: ["blog/my-post.md"],
+            permalinks: {
+              "blog/my-post.md": "/custom-url",
+            },
+          });
+
+        let ast = processor.parse("[[blog/my-post#Section]]");
+
+        expect(select("wikiLink", ast)).not.toEqual(null);
+
+        visit(ast, "wikiLink", (node) => {
+          expect(node.value).toBe("blog/my-post#Section");
+          expect(node.data.path).toBe("/custom-url#Section");
+          expect(node.data.existing).toBe(true);
+          expect(node.data.hProperties?.href).toBe("/custom-url#Section");
+        });
+      });
+
+      test("falls back to urlResolver when no permalink is provided", () => {
+        const processor = unified()
+          .use(markdown)
+          .use(wikiLinkPlugin, {
+            files: ["blog/my-post.md"],
+            permalinks: {
+              "other/file.md": "/other-url",
+            },
+          });
+
+        let ast = processor.parse("[[blog/my-post]]");
+
+        expect(select("wikiLink", ast)).not.toEqual(null);
+
+        visit(ast, "wikiLink", (node) => {
+          expect(node.value).toBe("blog/my-post");
+          expect(node.data.path).toBe("blog/my-post");
+          expect(node.data.existing).toBe(true);
+          expect(node.data.hProperties?.href).toBe("blog/my-post");
+        });
+      });
+
+      test("works with shortestPossible format", () => {
+        const processor = unified()
+          .use(markdown)
+          .use(wikiLinkPlugin, {
+            files: ["blog/test.md", "test.md"],
+            permalinks: {
+              "blog/test.md": "/blog-permalink",
+              "test.md": "/test-permalink",
+            },
+            format: "shortestPossible",
+          });
+
+        let ast = processor.parse("[[test]]");
+
+        expect(select("wikiLink", ast)).not.toEqual(null);
+
+        visit(ast, "wikiLink", (node) => {
+          expect(node.value).toBe("test");
+          // Should match blog/test.md (shortest path)
+          expect(node.data.path).toBe("/test-permalink");
+          expect(node.data.existing).toBe(true);
+          expect(node.data.hProperties?.href).toBe("/test-permalink");
+        });
+      });
+
+      test("permalink is applied to embeds", () => {
+        const processor = unified()
+          .use(markdown)
+          .use(wikiLinkPlugin, {
+            files: ["assets/image.jpg"],
+            permalinks: {
+              "assets/image.jpg": "/custom-image-url",
+            },
+          });
+
+        let ast = processor.parse("![[image.jpg]]");
+
+        expect(select("embed", ast)).not.toEqual(null);
+
+        visit(ast, "embed", (node) => {
+          expect(node.value).toBe("image.jpg");
+          // Embeds should use the permalink when available
+          expect(node.data.path).toBe("/custom-image-url");
+          expect(node.data.hProperties?.src).toBe("/custom-image-url");
+        });
+      });
+    });
   });
 });

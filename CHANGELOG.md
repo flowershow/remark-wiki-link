@@ -1,5 +1,15 @@
 # remark-wiki-link
 
+## 3.3.0
+
+### Minor Changes
+
+- - Add support for Obsidian-style permalinks
+    - Add new `permalinks` option to map file paths to custom URLs (e.g., `{ "blog/post.md": "/custom-url" }`)
+    - Permalinks take precedence over `urlResolver` when defined
+    - Works with both regular wiki links and embeds
+  - Update documentation.
+
 ## 3.2.1
 
 ### Patch Changes

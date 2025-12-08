@@ -18,6 +18,7 @@ import { WIKI_LINK_TARGET_PATTERN } from "../utils/const";
 function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
   const format = opts.format || "shortestPossible";
   const files = opts.files || [];
+  const permalinks = opts.permalinks || {};
   const caseInsensitive = opts.caseInsensitive ?? true;
   const className = opts.className || "internal";
   const newClassName = opts.newClassName || "new";
@@ -83,13 +84,21 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
 
     wikiLink.data.existing = existing;
 
-    // Apply urlResolver to the matched file path (or original if no match)
-    // For embeds, don't apply urlResolver
-    const url = urlResolver({
-      filePath: matchingFilePath ?? targetPath,
-      heading,
-      isEmbed: token.type === "embed",
-    });
+    // Use permalink if available, otherwise apply urlResolver
+    let url: string;
+    if (matchingFilePath && permalinks[matchingFilePath]) {
+      // Use the permalink directly, optionally adding heading
+      const permalink = permalinks[matchingFilePath];
+      url = heading ? `${permalink}#${heading}` : permalink;
+    } else {
+      // Apply urlResolver to the matched file path (or original if no match)
+      // For embeds, don't apply urlResolver
+      url = urlResolver({
+        filePath: matchingFilePath ?? targetPath,
+        heading,
+        isEmbed: token.type === "embed",
+      });
+    }
 
     wikiLink.data.path = url;
 
@@ -117,7 +126,7 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
         if (match) {
           wikiLink.data.alias = undefined;
         }
-        
+
         const hProperties: any = {
           src: url,
           alt: name,
@@ -125,14 +134,14 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
           width: width ?? undefined,
           height: height ?? undefined,
         };
-        
+
         // Add inline styles for better rendering control
         if (width) {
           const styleWidth = `width: ${width}px`;
           const styleHeight = height ? `; height: ${height}px` : "";
           hProperties.style = `${styleWidth}${styleHeight}`;
         }
-        
+
         wikiLink.data.hName = "img";
         wikiLink.data.hProperties = hProperties;
       } else if (isPdfFile(extension)) {
@@ -148,7 +157,7 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
         if (match) {
           wikiLink.data.alias = undefined;
         }
-        
+
         const hProperties: any = {
           src: url,
           className: classNames,
@@ -156,18 +165,21 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
           width: width ?? undefined,
           height: height ?? undefined,
         };
-        
+
         // Add inline styles for better rendering control
         if (width) {
           const styleWidth = `width: ${width}px`;
           const styleHeight = height ? `; height: ${height}px` : "";
           hProperties.style = `${styleWidth}${styleHeight}`;
         }
-        
+
         wikiLink.data.hName = "video";
         wikiLink.data.hProperties = hProperties;
         wikiLink.data.hChildren = [
-          { type: "text", value: "Your browser does not support the video tag." },
+          {
+            type: "text",
+            value: "Your browser does not support the video tag.",
+          },
         ];
       } else if (isAudioFile(extension)) {
         wikiLink.data.hName = "audio";
@@ -177,7 +189,10 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
           controls: true,
         };
         wikiLink.data.hChildren = [
-          { type: "text", value: "Your browser does not support the audio tag." },
+          {
+            type: "text",
+            value: "Your browser does not support the audio tag.",
+          },
         ];
       } else {
         // Unsupported file formats
