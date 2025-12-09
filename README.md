@@ -1,8 +1,6 @@
-# @flowershow/remark-wiki-link
+# remark-wiki-link
 
-Parse and render wiki-style links like `[[...]]` and `![[...]]` in markdown. This works in general but is especially oriented to supporting most Obsidian style links.
-
-🚧 TODO better docs and usage instructions/examples
+`remark` plugin to parse and render wiki-style links like `[[...]]` and `![[...]]` in markdown. This works whatever markdown you have *and* it is particularly designed to support the Obsidian style links.
 
 ## Features supported
 
