@@ -96,6 +96,21 @@ describe("micromark-extension-wiki-link", () => {
       );
     });
 
+    test("with an alias inside a table", () => {
+      const markdown = `| Column 1 | Column 2  | Column 3 |
+| -------- | --------------------------------- | -------- |
+| Data 1   | [[post-1\|Link with Alias]]       | Data 2   |`;
+      const serialized = micromark(markdown, "ascii", {
+        extensions: [syntax()],
+        htmlExtensions: [html()],
+      });
+      expect(serialized).toBe(
+        `<p>| Column 1 | Column 2  | Column 3 |
+| -------- | --------------------------------- | -------- |
+| Data 1   | <a href="post-1" class="internal new">Link with Alias</a>       | Data 2   |</p>`,
+      );
+    });
+
     test("with Obsidian-style shortest possible path format and a matching file", () => {
       const serialized = micromark("[[Wiki Link]]", "ascii", {
         extensions: [syntax()],

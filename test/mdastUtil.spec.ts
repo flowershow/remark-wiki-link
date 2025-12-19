@@ -194,6 +194,31 @@ describe("mdast-util-wiki-link", () => {
       });
     });
 
+    test("with an alias inside a table", () => {
+      const markdown = `| Column 1 | Column 2  | Column 3 |
+| -------- | --------------------------------- | -------- |
+| Data 1   | [[post-1\|Link with Alias]]       | Data 2   |`;
+      const ast = fromMarkdown(markdown, {
+        extensions: [syntax()],
+        mdastExtensions: [
+          wikiLinkFromMarkdown({
+            files: [],
+          }),
+        ],
+      });
+
+      visit(ast, "wikiLink", (node) => {
+        expect(node.value).toBe("post-1");
+        expect(node.data.path).toBe("post-1");
+        expect(node.data.alias).toBe("Link with Alias");
+        expect(node.data.existing).toBe(false);
+        expect(node.data.hName).toBe("a");
+        expect(node.data.hProperties?.className).toBe("internal new");
+        expect(node.data.hProperties?.href).toBe("post-1");
+        expect(node.data.hChildren?.[0].value).toBe("Link with Alias");
+      });
+    });
+
     test("with Obsidian-style shortest possible path format and a matching file", () => {
       const ast = fromMarkdown("[[Wiki Link]]", {
         extensions: [syntax()],
