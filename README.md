@@ -115,6 +115,25 @@ The character used to separate the link target from its alias in wiki links duri
 
 This option allows you to use different wiki link syntaxes. For instance, you can use `:` as a divider by setting `aliasDivider: ":"`, which would parse and stringify links as `[[target:alias]]`.
 
+### `aliasOrder`
+
+Type: `"left" | "right"`
+Default: `"right"`
+
+Controls whether the alias appears before or after the target for regular wiki links during parsing and stringification.
+
+- **`"right"`**: Obsidian-style ordering. `[[target|alias]]`
+- **`"left"`**: Flexmark-style ordering. `[[alias|target]]`
+
+Examples:
+
+- `aliasOrder: "right"` parses `[[Actual Target|Link Text]]` as a link to `Actual Target` rendered as `Link Text`
+- `aliasOrder: "left"` parses `[[Link Text|Actual Target]]` as a link to `Actual Target` rendered as `Link Text`
+
+When no alias is present, both modes behave the same:
+
+- `[[Actual Target]]`
+
 ## Generating list of files
 
 If you're using shortest possible path format for your wiki links, you need to set `option.format: "shortestPossible"` and provide the plugin with a list of files in your content folder as `option.files`. You can generate this list using your own script or use a file system utility like `glob`:

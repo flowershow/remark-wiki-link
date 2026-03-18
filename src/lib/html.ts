@@ -14,6 +14,7 @@ import { WIKI_LINK_TARGET_PATTERN } from "../utils/const";
 // Micromark HtmlExtension
 // https://github.com/micromark/micromark#htmlextension
 function html(opts: Options = {}): HtmlExtension {
+  const aliasOrder = opts.aliasOrder ?? "right";
   const format = opts.format || "shortestPossible";
   const files = opts.files || [];
   const caseInsensitive = opts.caseInsensitive ?? true;
@@ -50,7 +51,14 @@ function html(opts: Options = {}): HtmlExtension {
   const exitWikiLink: Handle = function (this, token) {
     const node = top(this.getData("wikiLinkStack"));
 
-    const { target, alias } = node;
+    const rawTarget = node.target;
+    const rawAlias = node.alias;
+    const target =
+      token.type !== "embed" && aliasOrder === "left" && rawAlias
+        ? rawAlias
+        : rawTarget;
+    const alias =
+      token.type !== "embed" && aliasOrder === "left" ? rawTarget : rawAlias;
 
     if (!target) {
       throw new Error("Target is required");

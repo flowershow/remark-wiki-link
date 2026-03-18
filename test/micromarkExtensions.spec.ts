@@ -96,6 +96,16 @@ describe("micromark-extension-wiki-link", () => {
       );
     });
 
+    test("with aliasOrder left", () => {
+      const serialized = micromark("[[Alias|Wiki Link]]", "ascii", {
+        extensions: [syntax()],
+        htmlExtensions: [html({ aliasOrder: "left" })],
+      });
+      expect(serialized).toBe(
+        '<p><a href="Wiki Link" class="internal new">Alias</a></p>',
+      );
+    });
+
     test("with an alias inside a table", () => {
       const markdown = `| Column 1 | Column 2  | Column 3 |
 | -------- | --------------------------------- | -------- |

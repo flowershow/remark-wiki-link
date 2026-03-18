@@ -16,6 +16,7 @@ import { Options } from "./remarkWikiLink";
 import { WIKI_LINK_TARGET_PATTERN } from "../utils/const";
 
 function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
+  const aliasOrder = opts.aliasOrder ?? "right";
   const format = opts.format || "shortestPossible";
   const files = opts.files || [];
   const permalinks = opts.permalinks || {};
@@ -54,14 +55,21 @@ function fromMarkdown(opts: Options = {}): FromMarkdownExtension {
   const exitWikiLink: Handle = function (this, token) {
     const wikiLink = top(this.stack);
 
-    const {
-      value,
-      data: { alias },
-    } = wikiLink;
+    const rawValue = wikiLink.value;
+    const rawAlias = wikiLink.data.alias;
+    const value =
+      token.type !== "embed" && aliasOrder === "left" && rawAlias
+        ? rawAlias
+        : rawValue;
+    const alias =
+      token.type !== "embed" && aliasOrder === "left" ? rawValue : rawAlias;
 
     if (!value) {
       throw new Error("Empty node value");
     }
+
+    wikiLink.value = value;
+    wikiLink.data.alias = alias;
 
     const [, targetPath = "", heading = ""] =
       value.match(WIKI_LINK_TARGET_PATTERN) || [];

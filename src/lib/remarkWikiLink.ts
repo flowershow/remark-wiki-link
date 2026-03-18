@@ -6,6 +6,7 @@ import type { Processor } from "unified";
 let warningIssued = false;
 
 export interface Options {
+  aliasOrder?: "left" | "right"; // (default: "right") whether aliases are written before or after the target in wiki links
   format?:
     | "regular" // link paths will be treated as is (absolute or relative, depending on how they are written)
     | "shortestPossible"; // (default) link paths will be treated as "shortest-possible" absolute paths (e.g. "[[abc]]" would be matched to blog/abc file if provided in files array)

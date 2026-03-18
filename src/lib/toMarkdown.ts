@@ -7,10 +7,12 @@ import {
 
 interface ToMarkdownOptions {
   aliasDivider?: string;
+  aliasOrder?: "left" | "right";
 }
 
 function toMarkdown(opts: ToMarkdownOptions = {}): ToMarkdownExtension {
   const aliasDivider = opts.aliasDivider ?? "|";
+  const aliasOrder = opts.aliasOrder ?? "right";
 
   const unsafe: Unsafe[] = [
     {
@@ -33,7 +35,10 @@ function toMarkdown(opts: ToMarkdownOptions = {}): ToMarkdownExtension {
 
     let value;
     if (nodeAlias !== nodeValue) {
-      value = `[[${nodeValue}${aliasDivider}${nodeAlias}]]`;
+      value =
+        aliasOrder === "left"
+          ? `[[${nodeAlias}${aliasDivider}${nodeValue}]]`
+          : `[[${nodeValue}${aliasDivider}${nodeAlias}]]`;
     } else {
       value = `[[${nodeValue}]]`;
     }

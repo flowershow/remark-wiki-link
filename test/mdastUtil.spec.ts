@@ -194,6 +194,29 @@ describe("mdast-util-wiki-link", () => {
       });
     });
 
+    test("with aliasOrder left", () => {
+      const ast = fromMarkdown("[[Alias|Wiki Link]]", {
+        extensions: [syntax()],
+        mdastExtensions: [
+          wikiLinkFromMarkdown({
+            aliasOrder: "left",
+            files: [],
+          }),
+        ],
+      });
+
+      visit(ast, "wikiLink", (node) => {
+        expect(node.value).toBe("Wiki Link");
+        expect(node.data.path).toBe("Wiki Link");
+        expect(node.data.alias).toBe("Alias");
+        expect(node.data.existing).toBe(false);
+        expect(node.data.hName).toBe("a");
+        expect(node.data.hProperties?.className).toBe("internal new");
+        expect(node.data.hProperties?.href).toBe("Wiki Link");
+        expect(node.data.hChildren?.[0].value).toBe("Alias");
+      });
+    });
+
     test("with an alias inside a table", () => {
       const markdown = `| Column 1 | Column 2  | Column 3 |
 | -------- | --------------------------------- | -------- |
@@ -635,6 +658,19 @@ describe("mdast-util-wiki-link", () => {
       }).trim();
 
       expect(stringified).toBe("[[Real Page:Page Alias]]");
+    });
+
+    test("stringifies a wiki link with aliasOrder left", () => {
+      const ast = fromMarkdown("[[Real Page|Page Alias]]", {
+        extensions: [syntax()],
+        mdastExtensions: [wikiLinkFromMarkdown()],
+      });
+
+      const stringified = toMarkdown(ast, {
+        extensions: [wikiLinkToMarkdown({ aliasOrder: "left" })],
+      }).trim();
+
+      expect(stringified).toBe("[[Page Alias|Real Page]]");
     });
 
     test("stringifies a wiki link with heading", () => {

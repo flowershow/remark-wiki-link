@@ -68,6 +68,27 @@ describe("remark-wiki-link", () => {
       });
     });
 
+    test("with aliasOrder left", () => {
+      const processor = unified().use(markdown).use(wikiLinkPlugin, {
+        aliasOrder: "left",
+      });
+
+      let ast = processor.parse("[[Alias|Wiki Link]]");
+
+      expect(select("wikiLink", ast)).not.toEqual(null);
+
+      visit(ast, "wikiLink", (node) => {
+        expect(node.value).toBe("Wiki Link");
+        expect(node.data.path).toBe("Wiki Link");
+        expect(node.data.alias).toBe("Alias");
+        expect(node.data.existing).toBe(false);
+        expect(node.data.hName).toBe("a");
+        expect(node.data.hProperties?.className).toBe("internal new");
+        expect(node.data.hProperties?.href).toBe("Wiki Link");
+        expect(node.data.hChildren?.[0].value).toBe("Alias");
+      });
+    });
+
     test("resolves to shortest path when multiple files match in shortestPossible mode", () => {
       const processor = unified()
         .use(markdown)
